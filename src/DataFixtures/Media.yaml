@@ -1,0 +1,9 @@
+App\Entity\Media:
+  media_{1..10}:
+    comment: <username()>
+    watchHistorie: <watchHistorie()>    
+    playlistMedia: <playlistMedia()>    
+    categorie: <categorie()>
+    language: <language()>
+    shortDescription: <shortDescription()>
+    longDescription: <longDescription()>

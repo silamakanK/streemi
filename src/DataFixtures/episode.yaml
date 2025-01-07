@@ -1,0 +1,5 @@
+App\Entity\Episode:
+  episode_{1..10}:
+    title: <title()>
+    duration: <duration()>
+    releaseDate: <releaseDate()>
