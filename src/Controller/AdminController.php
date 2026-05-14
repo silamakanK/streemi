@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Comment;
 use App\Entity\Media;
 use App\Entity\Movie;
 use App\Entity\Serie;
+use App\Enum\CommentStatusEnum;
 use App\Repository\CategoryRepository;
 use App\Repository\CommentRepository;
 use App\Repository\LanguageRepository;
@@ -121,5 +123,17 @@ class AdminController extends AbstractController
         return $this->render('admin/admin_comments.html.twig', [
             'comments' => $repository->findAll(),
         ]);
+    }
+
+    #[Route('/admin/comments/{id}/moderate', name: 'admin_comment_moderate', methods: ['POST'])]
+    public function moderateComment(Comment $comment, EntityManagerInterface $em, Request $request): Response
+    {
+        if ($this->isCsrfTokenValid('moderate_comment_' . $comment->getId(), $request->request->get('_token'))) {
+            $action = $request->request->get('action');
+            $comment->setStatus($action === 'validate' ? CommentStatusEnum::VALID : CommentStatusEnum::REJECTED);
+            $em->flush();
+        }
+
+        return $this->redirectToRoute('admin_comments');
     }
 }

@@ -19,6 +19,7 @@
                     <th class="p-5 text-left text-sm font-semibold text-gray-900">Média</th>
                     <th class="p-5 text-left text-sm font-semibold text-gray-900">Contenu</th>
                     <th class="p-5 text-left text-sm font-semibold text-gray-900">Statut</th>
+                    <th class="p-5 text-left text-sm font-semibold text-gray-900">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-300">
@@ -26,18 +27,42 @@
                 <tr class="bg-white hover:bg-gray-50 transition">
                     <td class="p-5 text-sm text-gray-900">{{ comment.id }}</td>
                     <td class="p-5 text-sm text-gray-900">{{ comment.publisher.username }}</td>
-                    <td class="p-5 text-sm text-gray-900">{{ comment.media.title }}</td>
+                    <td class="p-5 text-sm text-gray-900">
+                        <a href="{{ path('movie_detail', {id: comment.media.id}) }}" class="hover:text-red-600 underline">{{ comment.media.title }}</a>
+                    </td>
                     <td class="p-5 text-sm text-gray-500 max-w-xs truncate">{{ comment.content }}</td>
                     <td class="p-5 text-sm">
-                        {% if comment.status.value == 'VALID' %}
+                        {% if comment.status.value == 'valid' %}
                             <span class="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-medium">Validé</span>
+                        {% elseif comment.status.value == 'rejected' %}
+                            <span class="px-2 py-1 bg-red-50 text-red-600 rounded-full text-xs font-medium">Rejeté</span>
                         {% else %}
                             <span class="px-2 py-1 bg-amber-50 text-amber-600 rounded-full text-xs font-medium">En attente</span>
                         {% endif %}
                     </td>
+                    <td class="p-5 flex items-center gap-2">
+                        {% if comment.status.value != 'valid' %}
+                        <form method="POST" action="{{ path('admin_comment_moderate', {id: comment.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('moderate_comment_' ~ comment.id) }}">
+                            <input type="hidden" name="action" value="validate">
+                            <button type="submit" class="px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs rounded-lg transition">
+                                Valider
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% if comment.status.value != 'rejected' %}
+                        <form method="POST" action="{{ path('admin_comment_moderate', {id: comment.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('moderate_comment_' ~ comment.id) }}">
+                            <input type="hidden" name="action" value="reject">
+                            <button type="submit" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg transition">
+                                Rejeter
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="5" class="p-8 text-center text-gray-400">Aucun commentaire trouvé.</td></tr>
+                <tr><td colspan="6" class="p-8 text-center text-gray-400">Aucun commentaire trouvé.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
