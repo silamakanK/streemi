@@ -15,25 +15,27 @@ use Symfony\Component\Routing\Attribute\Route;
 class CategoryController extends AbstractController
 {
     #[Route('/discover', name: 'movie_discover')]
-    public function discover(CategoryRepository $repository): Response
+    public function discover(CategoryRepository $categoryRepository, MediaRepository $mediaRepository): Response
     {
         return $this->render('discover.html.twig', [
-            'categories' => $repository->findAll()
+            'categories' => $categoryRepository->findAll(),
+            'popularMedias' => $mediaRepository->findPopular(),
         ]);
     }
 
     #[Route('/category/{id}', name: 'show_category')]
-    public function showCategory(Category $category, MediaRepository $repository): Response
+    public function showCategory(Category $category, MediaRepository $mediaRepository, CategoryRepository $categoryRepository): Response
     {
-        $medias = $repository->findByCategoryWithPagination(
+        $medias = $mediaRepository->findByCategoryWithPagination(
             category: $category,
             currentPage: 1,
             maxPerPage: 9,
         );
 
         return $this->render('category.html.twig', [
-            'category' => $category,
-            'medias' => $medias
+            'category'      => $category,
+            'medias'        => $medias,
+            'allCategories' => $categoryRepository->findAll(),
         ]);
     }
 
