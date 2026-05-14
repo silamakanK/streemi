@@ -122,6 +122,47 @@
             </div>
         </section>
 
+        {% if app.user %}
+        <section class="mt-9">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-lg font-medium text-black">Ajouter à <span class="font-bold text-red-600">ma liste</span></h2>
+                {% if playlists|length > 0 %}
+                <form method="POST" class="mt-4 flex gap-3 items-center" id="addToPlaylistForm">
+                    <select name="playlistId" id="playlistSelect"
+                            class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-red-400">
+                        {% for playlist in playlists %}
+                            <option value="{{ playlist.id }}">{{ playlist.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition flex items-center gap-2">
+                        <svg class="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17,13H13V17H11V13H7V11H11V7H13V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/></svg>
+                        Ajouter
+                    </button>
+                </form>
+                <script>
+                    document.getElementById('addToPlaylistForm').addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const playlistId = document.getElementById('playlistSelect').value;
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '/lists/' + playlistId + '/add/{{ media.id }}';
+                        const input = document.createElement('input');
+                        input.type = 'hidden'; input.name = 'redirect'; input.value = 'detail';
+                        form.appendChild(input);
+                        document.body.appendChild(form);
+                        form.submit();
+                    });
+                </script>
+                {% else %}
+                <p class="mt-4 text-sm text-gray-500">
+                    Vous n'avez pas encore de playlist.
+                    <a href="{{ path('show_my_list') }}" class="text-red-600 hover:underline">Créez-en une</a>.
+                </p>
+                {% endif %}
+            </div>
+        </section>
+        {% endif %}
+
         <section class="mt-9">
             <div class="max-w-3xl mx-auto">
                 <h2 class="text-lg font-medium text-black">Les <span class="font-bold text-red-600">commentaires</span>

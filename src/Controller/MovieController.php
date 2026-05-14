@@ -20,8 +20,12 @@ class MovieController extends AbstractController
     #[Route('/detail/{id}', name: 'movie_detail')]
     public function detail(Media $media): Response
     {
+        /** @var User|null $user */
+        $user = $this->getUser();
+
         return $this->render('movie/detail.html.twig', [
-            'media' => $media,
+            'media'     => $media,
+            'playlists' => $user ? $user->getPlaylists() : [],
         ]);
     }
 

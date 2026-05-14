@@ -32,20 +32,14 @@
             <h1 class="font-medium text-black text-lg">Mes listes de <span class="font-bold text-red-600">films</span> et <span class="font-bold text-red-600">séries</span></h1>
 
             <div class="flex flex-col space-y-3 mt-9">
-                <div class="relative w-full flex space-x-3 text-gray-700 font-medium">
-                    <button class="flex w-1/3 text-nowrap items-center p-3 rounded-md border hover:scale-105 cursor-pointer transition hover:bg-gray-100">
-                        <svg class="fill-current h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>plus-circle</title><path d="M17,13H13V17H11V13H7V11H11V7H13V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" /></svg>
-                        Créer une liste
+                <form method="POST" action="{{ path('playlist_create') }}" class="flex gap-2">
+                    <input type="text" name="name" placeholder="Nom de la nouvelle liste..." required
+                           class="flex-1 px-4 py-2.5 rounded-md border border-gray-200 text-sm focus:outline-none focus:border-red-400"/>
+                    <button type="submit" class="flex items-center px-4 py-2.5 rounded-md border bg-red-600 text-white text-sm hover:bg-red-700 transition">
+                        <svg class="fill-current h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17,13H13V17H11V13H7V11H11V7H13V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/></svg>
+                        Créer
                     </button>
-                    <button class="flex w-1/3 text-nowrap items-center p-3 rounded-md border hover:scale-105 cursor-pointer transition hover:bg-gray-100">
-                        <svg class="fill-current h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>link-plus</title><path d="M7,7H11V9H7A3,3 0 0,0 4,12A3,3 0 0,0 7,15H11V17H7A5,5 0 0,1 2,12A5,5 0 0,1 7,7M17,7A5,5 0 0,1 22,12H20A3,3 0 0,0 17,9H13V7H17M8,11H16V13H8V11M17,12H19V15H22V17H19V20H17V17H14V15H17V12Z" /></svg>
-                        Suivre une liste
-                    </button>
-                    <button class="flex w-1/3 text-nowrap items-center p-3 rounded-md border hover:scale-105 cursor-pointer transition hover:bg-gray-100">
-                        <svg class="fill-current h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>share-circle</title><path d="M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M14 16V13C10.39 13 7.81 14.43 6 17C6.72 13.33 8.94 9.73 14 9V6L19 11L14 16Z" /></svg>
-                        Partager une liste
-                    </button>
-                </div>
+                </form>
 
                 <div class="relative w-full flex text-gray-700 font-medium">
                     <select id="choosePlaylistSelector" class="appearance-none w-full bg-white border border-gray-200 px-7 py-3 rounded-md shadow transition">
@@ -76,21 +70,46 @@
 
         {% if selectedPlaylist %}
             <section class="mt-9">
-                <ul class="grid grid-cols-2 gap-y-5 sm:grid-cols-3 gap-x-5">
-                        {% for playlistMedia in selectedPlaylist.playlistMedia %}
-                            {% set media = playlistMedia.media %}
-                            {% include 'parts/pages/movies/movie_card.html.twig' %}
-                        {% endfor %}
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-semibold text-gray-700">
+                        {{ selectedPlaylist.name }}
+                        <span class="text-sm font-normal text-gray-400">({{ selectedPlaylist.playlistMedia|length }} médias)</span>
+                    </h2>
+                    {% if selectedPlaylist.creator == app.user %}
+                    <form method="POST" action="{{ path('playlist_delete', {id: selectedPlaylist.id}) }}"
+                          onsubmit="return confirm('Supprimer cette playlist ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_playlist_' ~ selectedPlaylist.id) }}">
+                        <button type="submit" class="text-xs text-red-500 hover:text-red-700 flex items-center gap-1">
+                            <svg class="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
+                            Supprimer la playlist
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
 
+                <ul class="grid grid-cols-2 gap-y-5 sm:grid-cols-3 gap-x-5">
+                    {% for playlistMedia in selectedPlaylist.playlistMedia %}
+                        {% set media = playlistMedia.media %}
+                        <li class="relative">
+                            {% include 'parts/pages/movies/movie_card.html.twig' %}
+                            {% if selectedPlaylist.creator == app.user %}
+                            <form method="POST"
+                                  action="{{ path('playlist_remove_media', {playlistId: selectedPlaylist.id, mediaId: media.id}) }}"
+                                  class="absolute bottom-12 left-2">
+                                <input type="hidden" name="_token" value="{{ csrf_token('remove_media_' ~ media.id) }}">
+                                <button type="submit" title="Retirer de la playlist"
+                                        class="p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-full text-xs transition">
+                                    <svg class="h-3 w-3 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/></svg>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </li>
+                    {% else %}
+                        <li class="col-span-3 text-gray-400 text-sm py-8 text-center">
+                            Cette playlist est vide. Ajoutez des films depuis leur page de détail.
+                        </li>
+                    {% endfor %}
                 </ul>
-                <button id="loadMoreFilmsButton" class="flex flex-col items-center mt-9 w-full">
-                    <div class="relative flex w-full bg-red-600 flex-row p-3 items-center justify-center rounded-lg overflow-hidden border cursor-pointer transition hover:bg-red-700 text-white">
-                        <span class="font-bold mr-2">
-                            <svg class="h-6 w-6" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>plus-circle</title><path d="M17,13H13V17H11V13H7V11H11V7H13V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" /></svg>
-                        </span>
-                        <span class="capitalize font-medium text-md">Charger + de films</span>
-                    </div>
-                </button>
             </section>
         {% endif %}
     </main>
