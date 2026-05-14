@@ -18,6 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class AuthController extends AbstractController
 {
@@ -140,9 +141,88 @@ class AuthController extends AbstractController
         return $this->render('auth/confirm.html.twig');
     }
 
+    #[IsGranted('ROLE_USER')]
     #[Route('/profile', name: 'profile')]
     public function profile(): Response
     {
-        return $this->render('auth/index.html.twig');
+        return $this->render('profile.html.twig');
+    }
+
+    #[IsGranted('ROLE_USER')]
+    #[Route('/profile/update', name: 'profile_update', methods: ['POST'])]
+    public function updateProfile(
+        Request $request,
+        EntityManagerInterface $em,
+        UserRepository $userRepository
+    ): Response {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('profile_update', $request->request->get('_csrf_token'))) {
+            $this->addFlash('error', 'Token invalide.');
+            return $this->redirectToRoute('profile');
+        }
+
+        $username = trim($request->request->get('username', ''));
+        $email    = trim($request->request->get('email', ''));
+
+        if (!$username || !$email) {
+            $this->addFlash('error', 'Le nom d\'utilisateur et l\'email sont obligatoires.');
+            return $this->redirectToRoute('profile');
+        }
+
+        $existing = $userRepository->findOneBy(['email' => $email]);
+        if ($existing && $existing->getId() !== $user->getId()) {
+            $this->addFlash('error', 'Cette adresse email est déjà utilisée.');
+            return $this->redirectToRoute('profile');
+        }
+
+        $user->setUsername($username);
+        $user->setEmail($email);
+        $em->flush();
+
+        $this->addFlash('success', 'Profil mis à jour avec succès.');
+        return $this->redirectToRoute('profile');
+    }
+
+    #[IsGranted('ROLE_USER')]
+    #[Route('/profile/password', name: 'profile_change_password', methods: ['POST'])]
+    public function changePassword(
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $hasher
+    ): Response {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('change_password', $request->request->get('_csrf_token'))) {
+            $this->addFlash('error', 'Token invalide.');
+            return $this->redirectToRoute('profile');
+        }
+
+        $current = $request->request->get('current_password', '');
+        $new     = $request->request->get('new_password', '');
+        $confirm = $request->request->get('new_password_confirm', '');
+
+        if (!$hasher->isPasswordValid($user, $current)) {
+            $this->addFlash('error', 'Mot de passe actuel incorrect.');
+            return $this->redirectToRoute('profile');
+        }
+
+        if ($new !== $confirm) {
+            $this->addFlash('error', 'Les nouveaux mots de passe ne correspondent pas.');
+            return $this->redirectToRoute('profile');
+        }
+
+        if (strlen($new) < 6) {
+            $this->addFlash('error', 'Le mot de passe doit contenir au moins 6 caractères.');
+            return $this->redirectToRoute('profile');
+        }
+
+        $user->setPassword($hasher->hashPassword($user, $new));
+        $em->flush();
+
+        $this->addFlash('success', 'Mot de passe changé avec succès.');
+        return $this->redirectToRoute('profile');
     }
 }
