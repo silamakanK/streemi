@@ -1,4 +1,4 @@
-{% extends '.../base.html.twig' %}
+{% extends 'base.html.twig' %}
 
 {% block content %}
 <section class="h-full relative">
@@ -24,7 +24,7 @@
                     </button>
                 </div>
                 <p class="text-center text-sm font-medium mt-10"> Ou connectez-vous avec vos identifiants </p>
-                <form class="mt-10" method="POST" action="{{ path('forgot_password_api') }}">
+                <form class="mt-10" method="POST" action="{{ path('app_login') }}">
 
                     <input type="hidden" name="_csrf_token"
                            value="{{ csrf_token('authenticate') }}"

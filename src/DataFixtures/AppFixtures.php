@@ -20,9 +20,14 @@ use App\Enum\CommentStatusEnum;
 use App\Enum\UserStatusEnum;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+
+
 
 class AppFixtures extends Fixture
 {
+    public function __construct(private UserPasswordHasherInterface $hasher) {}
+
     public const MAX_USERS = 10;
     public const MAX_MEDIA = 100;
     public const MAX_SUBSCRIPTIONS = 3;
@@ -124,27 +129,26 @@ class AppFixtures extends Fixture
     {
         for ($i = 0; $i < self::MAX_USERS; $i++) {
             $user = new User();
-            $user->setEmail(email: "test_{$i}@example.com");
-            $user->setUsername(username: "test_{$i}");
-            $user->setPassword(password: 'motdepasse');
+            $user->setEmail("test_{$i}@example.com");
+            $user->setUsername("test_{$i}");
+            $user->setPassword($this->hasher->hashPassword($user, 'motdepasse'));
             $user->setAccountStatus(UserStatusEnum::ACTIVE);
             $users[] = $user;
-
-            $manager->persist(object: $user);
+            $manager->persist($user);
         }
 
         $admin = new User();
-        $admin->setEmail(email: "admin@example.com");
-        $admin->setUsername(username: "admin");
-        $admin->setPassword('motdepasse');
+        $admin->setEmail("admin@example.com");
+        $admin->setUsername("admin");
+        $admin->setPassword($this->hasher->hashPassword($admin, 'motdepasse'));
         $admin->setAccountStatus(UserStatusEnum::ACTIVE);
         $admin->addRole('ROLE_ADMIN');
         $manager->persist($admin);
 
         $normal = new User();
-        $normal->setEmail(email: "demo@example.com");
-        $normal->setUsername(username: "demo");
-        $normal->setPassword('motdepasse');
+        $normal->setEmail("demo@example.com");
+        $normal->setUsername("demo");
+        $normal->setPassword($this->hasher->hashPassword($normal, 'motdepasse'));
         $normal->setAccountStatus(UserStatusEnum::ACTIVE);
         $normal->addRole('ROLE_USER');
         $manager->persist($normal);
@@ -306,9 +310,8 @@ class AppFixtures extends Fixture
                 $history->setSubscription($sub);
                 $history->setStartAt(new \DateTimeImmutable());
                 $history->setEndAt(new \DateTimeImmutable());
+                $manager->persist($history);
             }
-
-            $manager->persist($history);
         }
     }
 

@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} Streemi - Admin - Commentaires {% endblock %}
+
+{% block content %}
+<div class="flex-1 py-10 px-5 sm:px-10">
+    <h1 class="text-lg font-medium text-black mb-4">Administration <span class="font-bold text-red-600">des commentaires</span></h1>
+    <a href="{{ path('admin') }}" class="underline decoration-2 decoration-red-400 hover:text-red-600 inline-flex items-center mb-9">
+        <svg class="fill-current h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/></svg>
+        Retour
+    </a>
+
+    <div class="overflow-hidden border rounded-lg border-gray-300 mt-6">
+        <table class="table-auto min-w-full">
+            <thead>
+                <tr class="bg-gray-50">
+                    <th class="p-5 text-left text-sm font-semibold text-gray-900">ID</th>
+                    <th class="p-5 text-left text-sm font-semibold text-gray-900">Auteur</th>
+                    <th class="p-5 text-left text-sm font-semibold text-gray-900">Média</th>
+                    <th class="p-5 text-left text-sm font-semibold text-gray-900">Contenu</th>
+                    <th class="p-5 text-left text-sm font-semibold text-gray-900">Statut</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-300">
+                {% for comment in comments %}
+                <tr class="bg-white hover:bg-gray-50 transition">
+                    <td class="p-5 text-sm text-gray-900">{{ comment.id }}</td>
+                    <td class="p-5 text-sm text-gray-900">{{ comment.publisher.username }}</td>
+                    <td class="p-5 text-sm text-gray-900">{{ comment.media.title }}</td>
+                    <td class="p-5 text-sm text-gray-500 max-w-xs truncate">{{ comment.content }}</td>
+                    <td class="p-5 text-sm">
+                        {% if comment.status.value == 'VALID' %}
+                            <span class="px-2 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-medium">Validé</span>
+                        {% else %}
+                            <span class="px-2 py-1 bg-amber-50 text-amber-600 rounded-full text-xs font-medium">En attente</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="p-8 text-center text-gray-400">Aucun commentaire trouvé.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

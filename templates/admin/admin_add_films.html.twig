@@ -1,4 +1,4 @@
-{% extends '../base.html.twig' %}
+{% extends 'base.html.twig' %}
 
 {% block title %} Streemi - Admin - Ajouter un film {% endblock %}
 
@@ -19,60 +19,50 @@
             </header>
             <section>
                 <h1 class="text-lg font-medium text-black mb-9">Ajouter <span class="font-bold text-red-600">un film/une série</span></h1>
-                <a href="admin_films.html" class="underline decoration-2 decoration-red-400 hover:text-red-600 inline-flex items-center"><svg class="fill-current h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>arrow-left</title><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg> Revenir à la liste des films</a>
+                <a href="{{ path('admin_movies') }}" class="underline decoration-2 decoration-red-400 hover:text-red-600 inline-flex items-center"><svg class="fill-current h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>arrow-left</title><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg> Revenir à la liste des films</a>
             </section>
             <section class="mt-9">
-                <form class="mt-10 space-y-3">
+                <form class="mt-10 space-y-3" method="POST" action="{{ path('admin_movies_add') }}">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('admin_add_media') }}">
                     <div class="relative flex space-x-3">
-                        <input class="w-2/3 px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="firstname" type="text" placeholder="Nom du film"/>
-                        <select class="w-1/3 px-8 py-4 ml-0 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="type">
-                            <option selected>Type</option>
+                        <input class="w-2/3 px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" name="title" type="text" placeholder="Nom du film" required/>
+                        <select class="w-1/3 px-8 py-4 ml-0 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" name="type" required>
+                            <option value="">Type</option>
                             <option value="movie">Film</option>
-                            <option value="tvshow">Série</option>
+                            <option value="serie">Série</option>
                         </select>
                     </div>
                     <div class="relative">
-                        <input class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="cover" type="url" placeholder="Image du film"/>
+                        <input class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" name="cover" type="url" placeholder="URL de l'image de couverture"/>
                     </div>
                     <div class="relative">
-                        <textarea class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="shortdesc" placeholder="Description courte" rows="3"></textarea>
+                        <textarea class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" name="short_description" placeholder="Description courte" rows="3" required></textarea>
                     </div>
                     <div class="relative">
-                        <textarea class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="longdesc" placeholder="Description longue" rows="10"></textarea>
+                        <textarea class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" name="long_description" placeholder="Description longue" rows="10" required></textarea>
                     </div>
                     <div class="relative">
                         <div class="mx-auto">
-                            <select multiple id="categories" class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white">
-                                <option selected>Catégories</option>
-                                <option value="action">Action</option>
-                                <option value="adventure">Aventure</option>
-                                <option value="scifi">Science Fiction</option>
-                                <option value="comedie">Comédie</option>
+                            <select multiple name="categories[]" class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white">
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.nom }}</option>
+                                {% endfor %}
                             </select>
+                            <p class="text-xs text-gray-400 mt-1">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs catégories</p>
                         </div>
                     </div>
                     <div class="relative flex space-x-3">
-                        <div class="w-1/2">
-                            <select multiple id="languages" class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white">
-                                <option selected>Langues</option>
-                                <option value="FR">Français</option>
-                                <option value="EN">Anglais</option>
-                                <option value="IT">Italien</option>
-                                <option value="DE">Allemand</option>
+                        <div class="w-full">
+                            <select multiple name="languages[]" class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white">
+                                {% for language in languages %}
+                                    <option value="{{ language.id }}">{{ language.nom }}</option>
+                                {% endfor %}
                             </select>
-                        </div>
-                        <div class="w-1/2">
-                            <select multiple id="subtitles" class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white">
-                                <option selected>Sous titres</option>
-                                <option value="FR">Français</option>
-                                <option value="EN">Anglais</option>
-                                <option value="IT">Italien</option>
-                                <option value="DE">Allemand</option>
-                            </select>
+                            <p class="text-xs text-gray-400 mt-1">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs langues</p>
                         </div>
                     </div>
                     <div class="relative flex space-x-3">
-                        <input class="w-1/3 px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="releasedate" type="date" placeholder="Date de sortie"/>
+                        <input class="w-1/3 px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" name="release_date" type="date" required/>
                         <input class="w-1/3 px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="duration" type="text" placeholder="Durée"/>
                         <input class="w-1/3 px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="note" type="text" placeholder="Note"/>
                     </div>

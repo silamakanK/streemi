@@ -1,4 +1,4 @@
-{%extends 'base.html.twig' %}
+{% extends 'base.html.twig' %}
 
 {% block title %} Streemi - Inscription {% endblock %}
 
@@ -34,35 +34,30 @@
                             </button>
                         </div>
                         <p class="text-center text-sm font-medium mt-10"> Ou utilisez vos informations :</p>
-                        <form class="mt-10 space-y-3">
+                        <form class="mt-10 space-y-3" method="POST" action="{{ path('register') }}">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('register') }}">
+
+                            {% if error is defined and error %}
+                                <div class="bg-red-600 text-white p-4 rounded-lg">{{ error }}</div>
+                            {% endif %}
+
                             <div class="relative">
-                                <input class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="firstname" type="text" placeholder="Prénom"/>
+                                <input class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="username" type="text" name="username" placeholder="Nom d'utilisateur" value="{{ username ?? '' }}"/>
                             </div>
                             <div class="relative">
-                                <input class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="email" type="text" placeholder="Adresse Email"/>
-                            </div>
-                            <div class="relative">
-                                <input class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="phoneNumber" type="text" placeholder="Numéro de téléphone"/>
+                                <input class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="email" type="email" name="email" placeholder="Adresse Email" value="{{ email ?? '' }}"/>
                             </div>
 
                             <div class="relative">
-                                <input class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="address" type="text" placeholder="Adresse"/>
-                            </div>
-                            <div class="relative flex space-x-3">
-                                <input class="w-1/2 px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="postalCode" type="text" placeholder="Code Postal"/>
-                                <input class="w-1/2 px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="city" type="text" placeholder="Ville"/>
-                            </div>
-
-                            <div class="relative">
-                                <input class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="password" type="password" placeholder="Mot de passe"/>
-                                <button class="absolute right-2 inset-y-0 flex items-center px-2 opacity-50 hover:opacity-100 transition">
+                                <input class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="password" type="password" name="password" placeholder="Mot de passe"/>
+                                <button type="button" class="absolute right-2 inset-y-0 flex items-center px-2 opacity-50 hover:opacity-100 transition">
                                     <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>eye</title><path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z" /></svg>
                                 </button>
                             </div>
                             <div class="relative">
-                                <input class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="repeated-password" type="password" placeholder="Confirmez votre Mot de passe"/>
-                                <button class="absolute right-2 inset-y-0 flex items-center px-2 opacity-50 hover:opacity-100 transition">
-                                    <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>eye</title><path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z" /></svg>
+                                <input class="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" id="repeated-password" type="password" name="password_confirm" placeholder="Confirmez votre Mot de passe"/>
+                                <button type="button" class="absolute right-2 inset-y-0 flex items-center px-2 opacity-50 hover:opacity-100 transition">
+                                    <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>eye</title><path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z" /></svg>
                                 </button>
                             </div>
                             <div class="relative">
@@ -76,7 +71,7 @@
                             </div>
 
                             <div class="flex items-center justify-center mt-16">
-                                <a class="text-red-600 cursor-pointer transition hover:text-red-700 hover:scale-105">
+                                <a href="{{ path('app_login') }}" class="text-red-600 cursor-pointer transition hover:text-red-700 hover:scale-105">
                                     Vous avez déjà un compte ? Connectez-vous
                                 </a>
                             </div>

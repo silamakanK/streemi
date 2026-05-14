@@ -11,6 +11,12 @@
     <div class="flex min-h-screen">
         {% include 'parts/structure/left-menu.html.twig' %}
         <main class="flex-1">
+            {% for message in app.flashes('success') %}
+                <div class="bg-green-500 text-white px-6 py-3 text-sm">{{ message }}</div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="bg-red-600 text-white px-6 py-3 text-sm">{{ message }}</div>
+            {% endfor %}
             {% block content %}{% endblock %}
         </main>
     </div>

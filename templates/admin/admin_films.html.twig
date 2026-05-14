@@ -1,4 +1,4 @@
-{% extends '../base.html.twig' %}
+{% extends 'base.html.twig' %}
 
 {% block title %} Streemi - Admin - Gérer les films {% endblock %}
 
@@ -64,442 +64,49 @@
                                 </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-300 ">
+                                {% for media in medias %}
                                 <tr class="bg-white transition-all duration-500 hover:bg-gray-50">
                                     <td class="">
                                         <div class="flex items-center py-5 px-5 ">
                                             <input type="checkbox" value="" class="w-5 h-5 appearance-none border border-gray-300  rounded-md mr-2 hover:border-indigo-500 hover:bg-indigo-100 checked:bg-no-repeat checked:bg-center checked:border-indigo-500 checked:bg-indigo-100">
                                         </div>
                                     </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900"> 20010510</td>
+                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">{{ media.id }}</td>
                                     <td class=" px-5 py-3">
                                         <div class="w-48 flex items-center gap-3">
-                                            <img src="https://fr.web.img2.acsta.net/c_310_420/medias/nmedia/00/02/53/35/affiche0.jpg" class="w-16" alt="">
+                                            <img src="{{ media.coverImage }}" class="w-16 h-20 object-cover rounded" alt="{{ media.title }}">
                                             <div class="data">
-                                                <p class="font-normal text-sm text-gray-900">Harry Potter 1</p>
+                                                <p class="font-normal text-sm text-gray-900">{{ media.title }}</p>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">2001</td>
+                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">{{ media.releaseDate|date('Y') }}</td>
                                     <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">
-                                        <div class="py-1.5 px-2.5 bg-blue-50 rounded-full flex justify-center w-20 items-center gap-1 text-blue-600">
-                                            <span class="font-medium text-xs ">Film</span>
-                                        </div>
-                                    </td>
-                                    <td class="flex p-5 items-center gap-0.5">
-                                        <button class="p-2 rounded-lg transition text-orange-400 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>pencil</title>
-                                                <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="p-2  rounded-lg transition text-red-600 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>delete</title>
-                                                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr class="bg-white transition-all duration-500 hover:bg-gray-50">
-                                    <td class="">
-                                        <div class="flex items-center py-5 px-5 ">
-                                            <input type="checkbox" value="" class="w-5 h-5 appearance-none border border-gray-300  rounded-md mr-2 hover:border-indigo-500 hover:bg-indigo-100 checked:bg-no-repeat checked:bg-center checked:border-indigo-500 checked:bg-indigo-100">
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900"> 20010510</td>
-                                    <td class=" px-5 py-3">
-                                        <div class="w-48 flex items-center gap-3">
-                                            <img src="https://fr.web.img5.acsta.net/c_310_420/medias/nmedia/18/35/23/41/18378380.jpg" class="w-16" alt="">
-                                            <div class="data">
-                                                <p class="font-normal text-sm text-gray-900">Harry Potter 2</p>
+                                        {% if media.mediaType == 'Serie' %}
+                                            <div class="py-1.5 px-2.5 bg-purple-50 rounded-full flex justify-center w-20 items-center gap-1 text-purple-600">
+                                                <span class="font-medium text-xs">Série</span>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">2002</td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">
-                                        <div class="py-1.5 px-2.5 bg-blue-50 rounded-full flex justify-center w-20 items-center gap-1 text-blue-600">
-                                            <span class="font-medium text-xs ">Film</span>
-                                        </div>
-                                    </td>
-                                    <td class="flex p-5 items-center gap-0.5">
-                                        <button class="p-2 rounded-lg transition text-orange-400 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>pencil</title>
-                                                <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="p-2  rounded-lg transition text-red-600 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>delete</title>
-                                                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr class="bg-white transition-all duration-500 hover:bg-gray-50">
-                                    <td class="">
-                                        <div class="flex items-center py-5 px-5 ">
-                                            <input type="checkbox" value="" class="w-5 h-5 appearance-none border border-gray-300  rounded-md mr-2 hover:border-indigo-500 hover:bg-indigo-100 checked:bg-no-repeat checked:bg-center checked:border-indigo-500 checked:bg-indigo-100">
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900"> 20010510</td>
-                                    <td class=" px-5 py-3">
-                                        <div class="w-48 flex items-center gap-3">
-                                            <img src="https://www.ecranlarge.com/content/uploads/2019/11/fdi15gtvbtw5sbv5qenqecrxwkj-847.jpg" class="w-16" alt="">
-                                            <div class="data">
-                                                <p class="font-normal text-sm text-gray-900">Psych, Enquêteur malgrés lui</p>
+                                        {% else %}
+                                            <div class="py-1.5 px-2.5 bg-blue-50 rounded-full flex justify-center w-20 items-center gap-1 text-blue-600">
+                                                <span class="font-medium text-xs">Film</span>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">2006</td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">
-                                        <div class="py-1.5 px-2.5 bg-purple-50 rounded-full flex justify-center w-20 items-center gap-1 text-purple-600">
-                                            <span class="font-medium text-xs ">Série</span>
-                                        </div>
+                                        {% endif %}
                                     </td>
                                     <td class="flex p-5 items-center gap-0.5">
-                                        <button class="p-2 rounded-lg transition text-orange-400 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>pencil</title>
-                                                <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="p-2  rounded-lg transition text-red-600 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>delete</title>
-                                                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
-                                            </svg>
-                                        </button>
+                                        <a href="{{ path('movie_detail', {id: media.id}) }}" class="p-2 rounded-lg transition text-orange-400 flex item-center hover:bg-black/10">
+                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>eye</title><path d="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17M12,4.5C7,4.5 2.73,7.61 1,12C2.73,16.39 7,19.5 12,19.5C17,19.5 21.27,16.39 23,12C21.27,7.61 17,4.5 12,4.5Z" /></svg>
+                                        </a>
+                                        <form method="POST" action="{{ path('admin_movies_delete', {id: media.id}) }}" onsubmit="return confirm('Supprimer ce média ?')">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_media_' ~ media.id) }}">
+                                            <button type="submit" class="p-2 rounded-lg transition text-red-600 flex item-center hover:bg-black/10">
+                                                <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>delete</title><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/></svg>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
-                                <tr class="bg-white transition-all duration-500 hover:bg-gray-50">
-                                    <td class="">
-                                        <div class="flex items-center py-5 px-5 ">
-                                            <input type="checkbox" value="" class="w-5 h-5 appearance-none border border-gray-300  rounded-md mr-2 hover:border-indigo-500 hover:bg-indigo-100 checked:bg-no-repeat checked:bg-center checked:border-indigo-500 checked:bg-indigo-100">
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900"> 20010510</td>
-                                    <td class=" px-5 py-3">
-                                        <div class="w-48 flex items-center gap-3">
-                                            <img src="https://fr.web.img6.acsta.net/c_310_420/medias/nmedia/18/35/52/34/18450888.jpg" class="w-16" alt="">
-                                            <div class="data">
-                                                <p class="font-normal text-sm text-gray-900">Harry Potter 3</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">2004</td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">
-                                        <div class="py-1.5 px-2.5 bg-blue-50 rounded-full flex justify-center w-20 items-center gap-1 text-blue-600">
-                                            <span class="font-medium text-xs ">Film</span>
-                                        </div>
-                                    </td>
-                                    <td class="flex p-5 items-center gap-0.5">
-                                        <button class="p-2 rounded-lg transition text-orange-400 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>pencil</title>
-                                                <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="p-2  rounded-lg transition text-red-600 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>delete</title>
-                                                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-
-                                <tr class="bg-white transition-all duration-500 hover:bg-gray-50">
-                                    <td class="">
-                                        <div class="flex items-center py-5 px-5 ">
-                                            <input type="checkbox" value="" class="w-5 h-5 appearance-none border border-gray-300  rounded-md mr-2 hover:border-indigo-500 hover:bg-indigo-100 checked:bg-no-repeat checked:bg-center checked:border-indigo-500 checked:bg-indigo-100">
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900"> 20010510</td>
-                                    <td class=" px-5 py-3">
-                                        <div class="w-48 flex items-center gap-3">
-                                            <img src="https://fr.web.img6.acsta.net/pictures/19/05/22/16/28/2822061.jpg" class="w-16" alt="">
-                                            <div class="data">
-                                                <p class="font-normal text-sm text-gray-900">Mentalist</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">2008</td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">
-                                        <div class="py-1.5 px-2.5 bg-purple-50 rounded-full flex justify-center w-20 items-center gap-1 text-purple-600">
-                                            <span class="font-medium text-xs ">Série</span>
-                                        </div>
-                                    </td>
-                                    <td class="flex p-5 items-center gap-0.5">
-                                        <button class="p-2 rounded-lg transition text-orange-400 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>pencil</title>
-                                                <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="p-2  rounded-lg transition text-red-600 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>delete</title>
-                                                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-
-                                <tr class="bg-white transition-all duration-500 hover:bg-gray-50">
-                                    <td class="">
-                                        <div class="flex items-center py-5 px-5 ">
-                                            <input type="checkbox" value="" class="w-5 h-5 appearance-none border border-gray-300  rounded-md mr-2 hover:border-indigo-500 hover:bg-indigo-100 checked:bg-no-repeat checked:bg-center checked:border-indigo-500 checked:bg-indigo-100">
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900"> 20010510</td>
-                                    <td class=" px-5 py-3">
-                                        <div class="w-48 flex items-center gap-3">
-                                            <img src="https://fr.web.img4.acsta.net/c_310_420/medias/nmedia/18/36/32/70/18778375.jpg" class="w-16" alt="">
-                                            <div class="data">
-                                                <p class="font-normal text-sm text-gray-900">Harry Potter 4</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">2005</td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">
-                                        <div class="py-1.5 px-2.5 bg-blue-50 rounded-full flex justify-center w-20 items-center gap-1 text-blue-600">
-                                            <span class="font-medium text-xs ">Film</span>
-                                        </div>
-                                    </td>
-                                    <td class="flex p-5 items-center gap-0.5">
-                                        <button class="p-2 rounded-lg transition text-orange-400 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>pencil</title>
-                                                <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="p-2  rounded-lg transition text-red-600 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>delete</title>
-                                                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr class="bg-white transition-all duration-500 hover:bg-gray-50">
-                                    <td class="">
-                                        <div class="flex items-center py-5 px-5 ">
-                                            <input type="checkbox" value="" class="w-5 h-5 appearance-none border border-gray-300  rounded-md mr-2 hover:border-indigo-500 hover:bg-indigo-100 checked:bg-no-repeat checked:bg-center checked:border-indigo-500 checked:bg-indigo-100">
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900"> 20010510</td>
-                                    <td class=" px-5 py-3">
-                                        <div class="w-48 flex items-center gap-3">
-                                            <img src="https://fr.web.img6.acsta.net/c_310_420/medias/nmedia/18/65/64/35/19116952.jpg" class="w-16" alt="">
-                                            <div class="data">
-                                                <p class="font-normal text-sm text-gray-900">Harry Potter 5</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">2007</td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">
-                                        <div class="py-1.5 px-2.5 bg-blue-50 rounded-full flex justify-center w-20 items-center gap-1 text-blue-600">
-                                            <span class="font-medium text-xs ">Film</span>
-                                        </div>
-                                    </td>
-                                    <td class="flex p-5 items-center gap-0.5">
-                                        <button class="p-2 rounded-lg transition text-orange-400 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>pencil</title>
-                                                <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="p-2  rounded-lg transition text-red-600 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>delete</title>
-                                                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr class="bg-white transition-all duration-500 hover:bg-gray-50">
-                                    <td class="">
-                                        <div class="flex items-center py-5 px-5 ">
-                                            <input type="checkbox" value="" class="w-5 h-5 appearance-none border border-gray-300  rounded-md mr-2 hover:border-indigo-500 hover:bg-indigo-100 checked:bg-no-repeat checked:bg-center checked:border-indigo-500 checked:bg-indigo-100">
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900"> 20010510</td>
-                                    <td class=" px-5 py-3">
-                                        <div class="w-48 flex items-center gap-3">
-                                            <img src="https://fr.web.img3.acsta.net/c_310_420/medias/nmedia/18/69/69/81/19590744.jpg" class="w-16" alt="">
-                                            <div class="data">
-                                                <p class="font-normal text-sm text-gray-900">Harry Potter 6</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">2009</td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">
-                                        <div class="py-1.5 px-2.5 bg-blue-50 rounded-full flex justify-center w-20 items-center gap-1 text-blue-600">
-                                            <span class="font-medium text-xs ">Film</span>
-                                        </div>
-                                    </td>
-                                    <td class="flex p-5 items-center gap-0.5">
-                                        <button class="p-2 rounded-lg transition text-orange-400 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>pencil</title>
-                                                <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="p-2  rounded-lg transition text-red-600 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>delete</title>
-                                                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr class="bg-white transition-all duration-500 hover:bg-gray-50">
-                                    <td class="">
-                                        <div class="flex items-center py-5 px-5 ">
-                                            <input type="checkbox" value="" class="w-5 h-5 appearance-none border border-gray-300  rounded-md mr-2 hover:border-indigo-500 hover:bg-indigo-100 checked:bg-no-repeat checked:bg-center checked:border-indigo-500 checked:bg-indigo-100">
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900"> 20010510</td>
-                                    <td class=" px-5 py-3">
-                                        <div class="w-48 flex items-center gap-3">
-                                            <img src="https://fr.web.img6.acsta.net/c_310_420/medias/nmedia/18/78/64/49/19762436.jpg" class="w-16" alt="">
-                                            <div class="data">
-                                                <p class="font-normal text-sm text-gray-900">Harry Potter 7</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">2010</td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">
-                                        <div class="py-1.5 px-2.5 bg-blue-50 rounded-full flex justify-center w-20 items-center gap-1 text-blue-600">
-                                            <span class="font-medium text-xs ">Film</span>
-                                        </div>
-                                    </td>
-                                    <td class="flex p-5 items-center gap-0.5">
-                                        <button class="p-2 rounded-lg transition text-orange-400 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>pencil</title>
-                                                <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="p-2  rounded-lg transition text-red-600 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>delete</title>
-                                                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr class="bg-white transition-all duration-500 hover:bg-gray-50">
-                                    <td class="">
-                                        <div class="flex items-center py-5 px-5 ">
-                                            <input type="checkbox" value="" class="w-5 h-5 appearance-none border border-gray-300  rounded-md mr-2 hover:border-indigo-500 hover:bg-indigo-100 checked:bg-no-repeat checked:bg-center checked:border-indigo-500 checked:bg-indigo-100">
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900"> 20010510</td>
-                                    <td class=" px-5 py-3">
-                                        <div class="w-48 flex items-center gap-3">
-                                            <img src="https://fr.web.img6.acsta.net/c_310_420/pictures/16/10/11/09/32/205295.jpg" class="w-16" alt="">
-                                            <div class="data">
-                                                <p class="font-normal text-sm text-gray-900">Les animaux fantastiques 1</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">2011</td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">
-                                        <div class="py-1.5 px-2.5 bg-blue-50 rounded-full flex justify-center w-20 items-center gap-1 text-blue-600">
-                                            <span class="font-medium text-xs ">Film</span>
-                                        </div>
-                                    </td>
-                                    <td class="flex p-5 items-center gap-0.5">
-                                        <button class="p-2 rounded-lg transition text-orange-400 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>pencil</title>
-                                                <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="p-2  rounded-lg transition text-red-600 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>delete</title>
-                                                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr class="bg-white transition-all duration-500 hover:bg-gray-50">
-                                    <td class="">
-                                        <div class="flex items-center py-5 px-5 ">
-                                            <input type="checkbox" value="" class="w-5 h-5 appearance-none border border-gray-300  rounded-md mr-2 hover:border-indigo-500 hover:bg-indigo-100 checked:bg-no-repeat checked:bg-center checked:border-indigo-500 checked:bg-indigo-100">
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900"> 20010510</td>
-                                    <td class=" px-5 py-3">
-                                        <div class="w-48 flex items-center gap-3">
-                                            <img src="https://fr.web.img4.acsta.net/c_310_420/pictures/18/10/10/11/16/4794693.jpg" class="w-16" alt="">
-                                            <div class="data">
-                                                <p class="font-normal text-sm text-gray-900">Les animaux fantastiques 2</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">2016</td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">
-                                        <div class="py-1.5 px-2.5 bg-blue-50 rounded-full flex justify-center w-20 items-center gap-1 text-blue-600">
-                                            <span class="font-medium text-xs ">Film</span>
-                                        </div>
-                                    </td>
-                                    <td class="flex p-5 items-center gap-0.5">
-                                        <button class="p-2 rounded-lg transition text-orange-400 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>pencil</title>
-                                                <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="p-2  rounded-lg transition text-red-600 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>delete</title>
-                                                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr class="bg-white transition-all duration-500 hover:bg-gray-50">
-                                    <td class="">
-                                        <div class="flex items-center py-5 px-5 ">
-                                            <input type="checkbox" value="" class="w-5 h-5 appearance-none border border-gray-300  rounded-md mr-2 hover:border-indigo-500 hover:bg-indigo-100 checked:bg-no-repeat checked:bg-center checked:border-indigo-500 checked:bg-indigo-100">
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900"> 20010510</td>
-                                    <td class=" px-5 py-3">
-                                        <div class="w-48 flex items-center gap-3">
-                                            <img src="https://fr.web.img6.acsta.net/c_310_420/pictures/22/03/16/15/20/0170262.jpg" class="w-16" alt="">
-                                            <div class="data">
-                                                <p class="font-normal text-sm text-gray-900">Les animaux fantastiques 3</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">2018</td>
-                                    <td class="p-5 whitespace-nowrap text-sm leading-6 font-medium text-gray-900">
-                                        <div class="py-1.5 px-2.5 bg-blue-50 rounded-full flex justify-center w-20 items-center gap-1 text-blue-600">
-                                            <span class="font-medium text-xs ">Film</span>
-                                        </div>
-                                    </td>
-                                    <td class="flex p-5 items-center gap-0.5">
-                                        <button class="p-2 rounded-lg transition text-orange-400 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>pencil</title>
-                                                <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
-                                            </svg>
-                                        </button>
-                                        <button class="p-2  rounded-lg transition text-red-600 flex item-center hover:bg-black/10">
-                                            <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                                <title>delete</title>
-                                                <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
-                                            </svg>
-                                        </button>
-                                    </td>
-                                </tr>
-
-
+                                {% else %}
+                                <tr><td colspan="6" class="p-8 text-center text-gray-400">Aucun média trouvé.</td></tr>
+                                {% endfor %}
                                 </tbody>
                             </table>
                         </div>

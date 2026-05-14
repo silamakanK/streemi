@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Media;
-use APP\Entity\Category;
+use App\Entity\Category;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -37,7 +37,7 @@ class MediaRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('m')
             ->select('m, COUNT(p) as HIDDEN nbPlaylists')
             ->join('m.playlistMedia', 'p')
-            ->groupBy('m')
+            ->groupBy('m.id')
             ->orderBy('nbPlaylists', 'DESC')
             ->setMaxResults(10)
             ->getQuery()
