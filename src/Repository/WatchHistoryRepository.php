@@ -16,28 +16,25 @@ class WatchHistoryRepository extends ServiceEntityRepository
         parent::__construct($registry, WatchHistory::class);
     }
 
-    //    /**
-    //     * @return WatchHistory[] Returns an array of WatchHistory objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('w')
-    //            ->andWhere('w.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('w.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findByWatcherAndMedia(int $watcherId, int $mediaId): ?WatchHistory
+    {
+        return $this->createQueryBuilder('w')
+            ->where('w.watcher = :watcher')
+            ->andWhere('w.media = :media')
+            ->setParameter('watcher', $watcherId)
+            ->setParameter('media', $mediaId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 
-    //    public function findOneBySomeField($value): ?WatchHistory
-    //    {
-    //        return $this->createQueryBuilder('w')
-    //            ->andWhere('w.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /** @return WatchHistory[] */
+    public function findByWatcherOrderedByDate(int $watcherId): array
+    {
+        return $this->createQueryBuilder('w')
+            ->where('w.watcher = :watcher')
+            ->setParameter('watcher', $watcherId)
+            ->orderBy('w.lastWatchedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

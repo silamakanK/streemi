@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} Streemi - Mon historique {% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen 2xl:max-w-screen-2xl 2xl:mx-auto">
+    <main class="flex-1 py-10 px-5 sm:px-10">
+
+        <h1 class="text-lg font-medium text-black mb-9">
+            Mon <span class="font-bold text-red-600">historique</span> de visionnage
+        </h1>
+
+        {% if history|length == 0 %}
+            <div class="text-center py-16 text-gray-400">
+                <svg class="h-16 w-16 fill-current mx-auto mb-4 opacity-30" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M16.2,16.2L11,13V7H12.5V12.2L17,14.9L16.2,16.2Z"/></svg>
+                <p>Vous n'avez encore rien regardé.</p>
+                <a href="{{ path('homepage') }}" class="mt-4 inline-block text-red-600 hover:underline">Découvrir des films</a>
+            </div>
+        {% else %}
+        <ul class="space-y-4">
+            {% for entry in history %}
+            <li class="flex items-center gap-5 p-4 border rounded-xl hover:bg-gray-50 transition">
+                <a href="{{ path('movie_detail', {id: entry.media.id}) }}" class="shrink-0">
+                    <img src="{{ entry.media.coverImage }}" alt="{{ entry.media.title }}"
+                         class="w-20 h-28 object-cover rounded-lg shadow">
+                </a>
+                <div class="flex-1 min-w-0">
+                    <a href="{{ path('movie_detail', {id: entry.media.id}) }}"
+                       class="font-semibold text-gray-900 hover:text-red-600 transition block truncate">
+                        {{ entry.media.title }}
+                    </a>
+                    <div class="flex flex-wrap gap-1 mt-1">
+                        {% for category in entry.media.categories %}
+                            <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{{ category.nom }}</span>
+                        {% endfor %}
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">
+                        Dernière lecture : <span class="font-medium text-gray-700">{{ entry.lastWatchedAt|date('d/m/Y à H:i') }}</span>
+                    </p>
+                    <p class="text-sm text-gray-500">
+                        {{ entry.numberOfViews }} visionnage{{ entry.numberOfViews > 1 ? 's' : '' }}
+                    </p>
+                </div>
+                <div class="shrink-0 text-right">
+                    {% if entry.media.mediaType == 'Serie' %}
+                        <span class="px-2 py-1 bg-purple-50 text-purple-600 rounded-full text-xs font-medium">Série</span>
+                    {% else %}
+                        <span class="px-2 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">Film</span>
+                    {% endif %}
+                    <a href="{{ path('movie_detail', {id: entry.media.id}) }}"
+                       class="mt-2 block px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg transition text-center">
+                        Revoir
+                    </a>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+    </main>
+    {% include 'parts/structure/right-sidebar.html.twig' %}
+</div>
+{% endblock %}

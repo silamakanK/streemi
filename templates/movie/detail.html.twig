@@ -22,12 +22,24 @@
                         {% endfor %}
                         · {{ media.releaseDate|date('Y') }}
                     </div>
-                    <div class="mt-4 flex items-center gap-3">
-                        <a href="#" class="px-5 flex items-center py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-xs">
+                    <div class="mt-4 flex items-center gap-3 flex-wrap">
+                        {% if app.user %}
+                        <form method="POST" action="{{ path('media_watch', {id: media.id}) }}">
+                            <button type="submit" class="px-5 flex items-center py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-xs">
+                                <svg class="h-5 w-5 fill-current mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"/></svg>
+                                Regarder
+                            </button>
+                        </form>
+                        {% else %}
+                        <a href="{{ path('app_login') }}" class="px-5 flex items-center py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-xs">
                             <svg class="h-5 w-5 fill-current mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"/></svg>
                             Regarder
                         </a>
+                        {% endif %}
                         <span class="bg-white/30 py-1 px-3 text-xs rounded">{{ media.validatedComments|length }} commentaires</span>
+                        {% if watchEntry %}
+                        <span class="bg-white/30 py-1 px-3 text-xs rounded">{{ watchEntry.numberOfViews }} visionnage{{ watchEntry.numberOfViews > 1 ? 's' : '' }}</span>
+                        {% endif %}
                     </div>
                 </div>
             </div>
