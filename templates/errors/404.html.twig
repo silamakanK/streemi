@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} 404 - Page introuvable · Streemi {% endblock %}
+
+{% block content %}
+<div class="flex-1 flex items-center justify-center min-h-screen">
+    <div class="text-center px-6 py-16">
+        <svg class="h-24 w-24 fill-red-600 mx-auto mb-6 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M10 15.5v-7c0-.41.47-.65.8-.4l4.67 3.5c.27.2.27.6 0 .8l-4.67 3.5c-.33.25-.8.01-.8-.4Z"/>
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+        </svg>
+        <h1 class="text-8xl font-black text-red-600">404</h1>
+        <h2 class="text-2xl font-bold text-gray-900 mt-4">Page introuvable</h2>
+        <p class="text-gray-500 mt-3 max-w-sm mx-auto">
+            La page que vous cherchez n'existe pas ou a été déplacée.
+        </p>
+        <div class="mt-8 flex gap-4 justify-center">
+            <a href="{{ path('homepage') }}"
+               class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium">
+                Retour à l'accueil
+            </a>
+            <a href="{{ path('movie_discover') }}"
+               class="px-6 py-3 border border-red-600 text-red-600 hover:bg-red-50 rounded-lg transition font-medium">
+                Découvrir
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

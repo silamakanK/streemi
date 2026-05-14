@@ -18,14 +18,14 @@
     </a>
     {% endif %}
 
-    <div class="relative flex items-center">
+    <form method="GET" action="{{ path('search') }}" class="relative flex items-center">
         <span class="text-gray-400 absolute left-4">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
         </span>
-        <input type="text" class="text-xs ring-1 bg-transparent ring-gray-200 focus:ring-red-300 pl-10 pr-5 text-gray-600 py-3 rounded-full w-full outline-none" placeholder="Rechercher...">
-    </div>
+        <input type="text" name="q" class="text-xs ring-1 bg-transparent ring-gray-200 focus:ring-red-300 pl-10 pr-5 text-gray-600 py-3 rounded-full w-full outline-none" placeholder="Rechercher...">
+    </form>
 
     {% if app.user %}
     <div class="mt-8">

@@ -31,6 +31,18 @@ class MediaRepository extends ServiceEntityRepository
 
     }
 
+    /** @return Media[] */
+    public function search(string $query): array
+    {
+        return $this->createQueryBuilder('m')
+            ->where('LOWER(m.title) LIKE LOWER(:q)')
+            ->setParameter('q', '%' . $query . '%')
+            ->orderBy('m.title', 'ASC')
+            ->setMaxResults(30)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findPopular()
     {
         // a popular media is a media that has often been added to playlists

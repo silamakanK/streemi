@@ -107,32 +107,81 @@ class AuthController extends AbstractController
         // Symfony intercepte cette route automatiquement
     }
 
-    #[Route('/forgot', name: 'forgot_password')]
+    #[Route('/forgot', name: 'forgot_password', methods: ['GET', 'POST'])]
     public function forgotPassword(
         Request $request,
         UserRepository $userRepository,
+        EntityManagerInterface $em,
         MailerInterface $mailer
     ): Response {
-        $email = $request->get('email');
+        $sent = false;
 
-        if ($email) {
-            $user = $userRepository->findOneBy(['email' => $email]);
+        if ($request->isMethod('POST')) {
+            $emailAddress = trim($request->request->get('email', ''));
+            $user = $userRepository->findOneBy(['email' => $emailAddress]);
 
             if ($user) {
                 $token = bin2hex(random_bytes(32));
                 $user->setResetToken($token);
+                $em->flush();
 
+                $resetUrl = $request->getSchemeAndHttpHost() . '/reset?token=' . $token;
                 $resetEmail = (new Email())
                     ->from('contact@streemi.com')
                     ->to($user->getEmail())
-                    ->subject('Réinitialisation de votre mot de passe')
-                    ->html('<a href="http://localhost:8000/reset?token=' . $token . '">Cliquez ici pour réinitialiser votre mot de passe</a>');
-
+                    ->subject('Réinitialisation de votre mot de passe — Streemi')
+                    ->html("
+                        <p>Bonjour <strong>{$user->getUsername()}</strong>,</p>
+                        <p>Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe :</p>
+                        <p><a href=\"{$resetUrl}\">{$resetUrl}</a></p>
+                        <p>Ce lien est valable 1 heure. Si vous n'avez pas fait cette demande, ignorez cet email.</p>
+                    ");
                 $mailer->send($resetEmail);
             }
+
+            $sent = true;
         }
 
-        return $this->render('auth/forgot.html.twig');
+        return $this->render('auth/forgot.html.twig', ['sent' => $sent]);
+    }
+
+    #[Route('/reset', name: 'reset_password', methods: ['GET', 'POST'])]
+    public function resetPassword(
+        Request $request,
+        UserRepository $userRepository,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $hasher
+    ): Response {
+        $token = $request->query->get('token') ?? $request->request->get('token', '');
+        $user  = $token ? $userRepository->findOneBy(['resetToken' => $token]) : null;
+
+        if (!$user) {
+            return $this->render('auth/reset.html.twig', ['invalid' => true, 'token' => '']);
+        }
+
+        if ($request->isMethod('POST')) {
+            $password = $request->request->get('password', '');
+            $confirm  = $request->request->get('password_confirm', '');
+
+            if ($password !== $confirm || strlen($password) < 6) {
+                return $this->render('auth/reset.html.twig', [
+                    'invalid' => false,
+                    'token'   => $token,
+                    'error'   => $password !== $confirm
+                        ? 'Les mots de passe ne correspondent pas.'
+                        : 'Le mot de passe doit contenir au moins 6 caractères.',
+                ]);
+            }
+
+            $user->setPassword($hasher->hashPassword($user, $password));
+            $user->setResetToken(null);
+            $em->flush();
+
+            $this->addFlash('success', 'Mot de passe réinitialisé. Vous pouvez vous connecter.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        return $this->render('auth/reset.html.twig', ['invalid' => false, 'token' => $token]);
     }
 
     #[Route('/confirm', name: 'confirm_account')]

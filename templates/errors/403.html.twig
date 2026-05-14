@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} 403 - Accès refusé · Streemi {% endblock %}
+
+{% block content %}
+<div class="flex-1 flex items-center justify-center min-h-screen">
+    <div class="text-center px-6 py-16">
+        <svg class="h-24 w-24 fill-red-600 mx-auto mb-6 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4l4 4-4 4-4-4 4-4zm0 8c-1.1 0-2-.9-2-2h4c0 1.1-.9 2-2 2z"/>
+        </svg>
+        <h1 class="text-8xl font-black text-red-600">403</h1>
+        <h2 class="text-2xl font-bold text-gray-900 mt-4">Accès refusé</h2>
+        <p class="text-gray-500 mt-3 max-w-sm mx-auto">
+            Vous n'avez pas les droits nécessaires pour accéder à cette page.
+        </p>
+        <div class="mt-8 flex gap-4 justify-center">
+            <a href="{{ path('homepage') }}"
+               class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium">
+                Retour à l'accueil
+            </a>
+            {% if not app.user %}
+            <a href="{{ path('app_login') }}"
+               class="px-6 py-3 border border-red-600 text-red-600 hover:bg-red-50 rounded-lg transition font-medium">
+                Se connecter
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

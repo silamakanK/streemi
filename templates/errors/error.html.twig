@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} Erreur {{ status_code }} · Streemi {% endblock %}
+
+{% block content %}
+<div class="flex-1 flex items-center justify-center min-h-screen">
+    <div class="text-center px-6 py-16">
+        <svg class="h-24 w-24 fill-red-600 mx-auto mb-6 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+        </svg>
+        <h1 class="text-8xl font-black text-red-600">{{ status_code }}</h1>
+        <h2 class="text-2xl font-bold text-gray-900 mt-4">Une erreur est survenue</h2>
+        <p class="text-gray-500 mt-3 max-w-sm mx-auto">
+            Quelque chose s'est mal passé. Réessayez ou revenez à l'accueil.
+        </p>
+        <div class="mt-8">
+            <a href="{{ path('homepage') }}"
+               class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-medium">
+                Retour à l'accueil
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
