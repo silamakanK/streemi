@@ -36,13 +36,16 @@ class MediaController extends AbstractController
         $query = trim($request->query->getString('q'));
         $type = CatalogTypeEnum::tryFrom($request->query->getString('type'));
         $page = max(1, $request->query->getInt('page', 1));
+        $category = $this->categoryRepository->find($request->query->getInt('category'));
 
-        $medias = $repository->findForAdmin($query, $type, $page, self::PER_PAGE);
+        $medias = $repository->findForAdmin($query, $type, $page, self::PER_PAGE, $category);
 
         return $this->render('admin/admin_films.html.twig', [
             'medias' => $medias,
             'query'  => $query,
             'type'   => $type,
+            'category' => $category,
+            'categories' => $this->categoryRepository->findBy([], ['nom' => 'ASC']),
             'page'   => $page,
             'pages'  => max(1, (int) ceil(count($medias) / self::PER_PAGE)),
         ]);

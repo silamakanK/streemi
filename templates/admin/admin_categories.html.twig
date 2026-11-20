@@ -1,38 +1,68 @@
 {% extends 'base.html.twig' %}
 
+{% set input = 'px-3 py-2 rounded-lg bg-gray-100 border border-gray-200 text-sm focus:outline-none focus:border-gray-400 focus:bg-white' %}
+{% set token = csrf_token('admin_categories') %}
+
 {% block title %} Streemi - Admin - Catégories {% endblock %}
 
 {% block content %}
-<div class="flex-1 py-10 px-5 sm:px-10">
-    <h1 class="text-lg font-medium text-black mb-4">Administration <span class="font-bold text-red-600">des catégories</span></h1>
-    <a href="{{ path('admin') }}" class="underline decoration-2 decoration-red-400 hover:text-red-600 inline-flex items-center mb-9">
-        <svg class="fill-current h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/></svg>
-        Retour
-    </a>
+<div class="flex min-h-screen 2xl:max-w-screen-2xl 2xl:mx-auto 2xl:border-x-2 2xl:border-gray-200">
+    <main class="flex-1 py-10 px-5 sm:px-10 max-w-5xl">
+        <a href="{{ path('admin') }}" class="text-xs text-gray-400 hover:text-red-600">← Administration</a>
+        <h1 class="text-lg font-medium text-black">Gestion <span class="font-bold text-red-600">des catégories</span></h1>
+        <p class="mt-1 text-sm text-gray-500">Le <b>nom</b> sert au classement et aux filtres, le <b>label</b> est le texte affiché sur la page Découvrir.</p>
 
-    <div class="overflow-hidden border rounded-lg border-gray-300 mt-6">
-        <table class="table-auto min-w-full">
-            <thead>
-                <tr class="bg-gray-50">
-                    <th class="p-5 text-left text-sm font-semibold text-gray-900">ID</th>
-                    <th class="p-5 text-left text-sm font-semibold text-gray-900">Nom</th>
-                    <th class="p-5 text-left text-sm font-semibold text-gray-900">Label</th>
-                    <th class="p-5 text-left text-sm font-semibold text-gray-900">Nb médias</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-300">
+        <form method="POST" action="{{ path('admin_category_add') }}" class="mt-8 flex flex-col sm:flex-row gap-2 p-4 border border-gray-200 rounded-xl bg-gray-50">
+            <input type="hidden" name="_token" value="{{ token }}">
+            <input name="nom" required maxlength="255" placeholder="Nom de la nouvelle catégorie (ex : Romance)" class="{{ input }} flex-1">
+            <input name="label" maxlength="255" placeholder="Label (optionnel, = nom par défaut)" class="{{ input }} sm:w-64">
+            <button class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium">+ Ajouter</button>
+        </form>
+
+        <div class="mt-6 overflow-x-auto border rounded-lg border-gray-300">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-50 text-left text-gray-900">
+                    <tr>
+                        <th class="p-4 font-semibold">Nom et label</th>
+                        <th class="p-4 font-semibold">Médias</th>
+                        <th class="p-4 font-semibold text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
                 {% for category in categories %}
-                <tr class="bg-white hover:bg-gray-50 transition">
-                    <td class="p-5 text-sm text-gray-900">{{ category.id }}</td>
-                    <td class="p-5 text-sm text-gray-900 font-medium">{{ category.nom }}</td>
-                    <td class="p-5 text-sm text-gray-500">{{ category.label }}</td>
-                    <td class="p-5 text-sm text-gray-900">{{ category.medias|length }}</td>
-                </tr>
+                    {% set locked = category.nom == constant('App\\Enum\\CatalogTypeEnum::ANIMATION_CATEGORY') %}
+                    {% set count = category.medias|length %}
+                    <tr class="bg-white hover:bg-gray-50">
+                        <td class="p-4">
+                            <form id="edit-{{ category.id }}" method="POST" action="{{ path('admin_category_edit', {id: category.id}) }}" class="flex flex-col sm:flex-row gap-2">
+                                <input type="hidden" name="_token" value="{{ token }}">
+                                <input name="nom" value="{{ category.nom }}" required maxlength="255" aria-label="Nom" class="{{ input }} font-medium sm:w-56" {{ locked ? 'readonly title="Utilisée par l\'onglet Animés : le nom ne peut pas changer"' }}>
+                                <input name="label" value="{{ category.label }}" maxlength="255" aria-label="Label" class="{{ input }} flex-1">
+                            </form>
+                            {% if locked %}<p class="mt-1 text-xs text-orange-600">Utilisée par l'onglet Animés : seul le label est modifiable.</p>{% endif %}
+                        </td>
+                        <td class="p-4 whitespace-nowrap">
+                            <a href="{{ path('admin_movies', {category: category.id}) }}" class="text-red-600 hover:underline" title="Voir les médias de cette catégorie">{{ count }} média{{ count > 1 ? 's' }}</a>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center justify-end gap-1">
+                                <button form="edit-{{ category.id }}" class="px-3 py-2 text-xs rounded-lg text-blue-600 hover:bg-blue-50">Enregistrer</button>
+                                {% if not locked %}
+                                    <form method="POST" action="{{ path('admin_category_delete', {id: category.id}) }}"
+                                          onsubmit="return confirm('Supprimer la catégorie « {{ category.nom|e('js') }} » ?{{ count ? ' Elle sera retirée de ' ~ count ~ ' média(s), qui ne seront pas supprimés.' }}')">
+                                        <input type="hidden" name="_token" value="{{ token }}">
+                                        <button class="px-3 py-2 text-xs rounded-lg text-red-600 hover:bg-red-50">Supprimer</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
                 {% else %}
-                <tr><td colspan="4" class="p-8 text-center text-gray-400">Aucune catégorie trouvée.</td></tr>
+                    <tr><td colspan="3" class="p-8 text-center text-gray-400">Aucune catégorie.</td></tr>
                 {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                </tbody>
+            </table>
+        </div>
+    </main>
 </div>
 {% endblock %}

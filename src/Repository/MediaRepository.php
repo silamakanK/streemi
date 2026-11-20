@@ -38,7 +38,7 @@ class MediaRepository extends ServiceEntityRepository
     }
 
     /** Liste paginée du back-office, avec recherche par titre et filtre par onglet */
-    public function findForAdmin(string $query, ?CatalogTypeEnum $type, int $page, int $perPage): Paginator
+    public function findForAdmin(string $query, ?CatalogTypeEnum $type, int $page, int $perPage, ?Category $category = null): Paginator
     {
         $qb = $this->createQueryBuilder('m')
             ->orderBy('m.id', 'DESC')
@@ -47,6 +47,9 @@ class MediaRepository extends ServiceEntityRepository
 
         if ($query !== '') {
             $qb->andWhere('LOWER(m.title) LIKE LOWER(:q)')->setParameter('q', '%' . $query . '%');
+        }
+        if ($category) {
+            $qb->andWhere(':category MEMBER OF m.categories')->setParameter('category', $category);
         }
 
         return new Paginator($this->filterByCatalogType($qb, $type));

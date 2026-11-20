@@ -8,7 +8,6 @@ use App\Entity\Comment;
 use App\Entity\User;
 use App\Enum\CatalogTypeEnum;
 use App\Enum\CommentStatusEnum;
-use App\Repository\CategoryRepository;
 use App\Repository\CommentRepository;
 use App\Repository\MediaRepository;
 use App\Repository\UserRepository;
@@ -65,14 +64,6 @@ class AdminController extends AbstractController
         $em->flush();
 
         return $this->redirectToRoute('admin_users');
-    }
-
-    #[Route('/admin/categories', name: 'admin_categories')]
-    public function listsCategories(CategoryRepository $repository): Response
-    {
-        return $this->render('admin/admin_categories.html.twig', [
-            'categories' => $repository->findAll(),
-        ]);
     }
 
     #[Route('/admin/comments', name: 'admin_comments')]
