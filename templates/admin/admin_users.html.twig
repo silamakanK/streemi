@@ -94,11 +94,23 @@
                                         {% endif %}
                                     </td>
                                     <td class="p-5 whitespace-nowrap text-sm">
+                                        <div class="flex items-center gap-3">
                                         {% if 'ROLE_ADMIN' in user.roles %}
                                             <span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">Admin</span>
                                         {% else %}
                                             <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">Utilisateur</span>
                                         {% endif %}
+                                        {% if user != app.user %}
+                                            {% set isAdmin = 'ROLE_ADMIN' in user.roles %}
+                                            <form method="POST" action="{{ path('admin_user_toggle_admin', {id: user.id}) }}"
+                                                  onsubmit="return confirm('{{ isAdmin ? 'Retirer les droits administrateur à ' : 'Nommer administrateur ' }}{{ user.username|e('js') }} ?')">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle_admin_' ~ user.id) }}">
+                                                <button class="text-xs {{ isAdmin ? 'text-gray-500' : 'text-red-600' }} hover:underline">
+                                                    {{ isAdmin ? 'Retirer admin' : 'Nommer admin' }}
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        </div>
                                     </td>
                                 </tr>
                                 {% else %}

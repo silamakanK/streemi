@@ -324,6 +324,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (false !== $key = array_search($role, $this->roles, true)) {
             unset($this->roles[$key]);
+            // Réindexe pour que les rôles restent une liste JSON et non un objet
+            $this->roles = array_values($this->roles);
         }
 
         return $this;

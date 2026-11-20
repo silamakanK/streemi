@@ -104,7 +104,7 @@ class Episode
     private ?\DateTimeImmutable $releasedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'episodes')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Season $season = null;
 
     public function getId(): ?int

@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Enum\CatalogTypeEnum;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 
@@ -34,6 +35,21 @@ class MediaRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
+    }
+
+    /** Liste paginée du back-office, avec recherche par titre et filtre par onglet */
+    public function findForAdmin(string $query, ?CatalogTypeEnum $type, int $page, int $perPage): Paginator
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->orderBy('m.id', 'DESC')
+            ->setFirstResult(($page - 1) * $perPage)
+            ->setMaxResults($perPage);
+
+        if ($query !== '') {
+            $qb->andWhere('LOWER(m.title) LIKE LOWER(:q)')->setParameter('q', '%' . $query . '%');
+        }
+
+        return new Paginator($this->filterByCatalogType($qb, $type));
     }
 
     /** @return Media[] */

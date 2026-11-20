@@ -126,7 +126,7 @@ class Season
     private Collection $episodes;
 
     #[ORM\ManyToOne(inversedBy: 'seasons')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Serie $serie = null;
 
     public function __construct()

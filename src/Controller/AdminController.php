@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Comment;
-use App\Entity\Media;
-use App\Entity\Movie;
-use App\Entity\Serie;
+use App\Entity\User;
+use App\Enum\CatalogTypeEnum;
 use App\Enum\CommentStatusEnum;
 use App\Repository\CategoryRepository;
 use App\Repository\CommentRepository;
-use App\Repository\LanguageRepository;
 use App\Repository\MediaRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,77 +26,12 @@ class AdminController extends AbstractController
     public function index(MediaRepository $mediaRepo, UserRepository $userRepo): Response
     {
         return $this->render('admin/admin.html.twig', [
-            'totalMedias' => count($mediaRepo->findAll()),
-            'totalUsers'  => count($userRepo->findAll()),
+            'totalMedias' => $mediaRepo->count([]),
+            'totalMovies' => count($mediaRepo->findForAdmin('', CatalogTypeEnum::MOVIE, 1, 1)),
+            'totalSeries' => count($mediaRepo->findForAdmin('', CatalogTypeEnum::SERIE, 1, 1)),
+            'totalAnimes' => count($mediaRepo->findForAdmin('', CatalogTypeEnum::ANIME, 1, 1)),
+            'totalUsers'  => $userRepo->count([]),
         ]);
-    }
-
-    #[Route('/admin/movies', name: 'admin_movies')]
-    public function listMovies(MediaRepository $repository): Response
-    {
-        return $this->render('admin/admin_films.html.twig', [
-            'medias' => $repository->findAll(),
-        ]);
-    }
-
-    #[Route('/admin/movies/add', name: 'admin_movies_add', methods: ['GET', 'POST'])]
-    public function addMovie(
-        Request $request,
-        EntityManagerInterface $em,
-        CategoryRepository $categoryRepository,
-        LanguageRepository $languageRepository
-    ): Response {
-        if ($request->isMethod('POST') && $this->isCsrfTokenValid('admin_add_media', $request->request->get('_csrf_token'))) {
-            $type  = $request->request->get('type');
-            $media = $type === 'serie' ? new Serie() : new Movie();
-
-            $media->setTitle($request->request->get('title', ''));
-            $media->setShortDescription($request->request->get('short_description', ''));
-            $media->setLongDescription($request->request->get('long_description', ''));
-            $media->setCoverImage($request->request->get('cover', ''));
-            $media->setStaff([]);
-            $media->setCasting([]);
-
-            $releaseDate = $request->request->get('release_date');
-            $media->setReleaseDate($releaseDate ? new \DateTime($releaseDate) : new \DateTime());
-
-            foreach ($request->request->all('categories') as $categoryId) {
-                $category = $categoryRepository->find($categoryId);
-                if ($category) {
-                    $media->addCategory($category);
-                }
-            }
-
-            foreach ($request->request->all('languages') as $languageId) {
-                $language = $languageRepository->find($languageId);
-                if ($language) {
-                    $media->addLanguage($language);
-                }
-            }
-
-            $em->persist($media);
-            $em->flush();
-
-            $this->addFlash('success', 'Média ajouté avec succès.');
-            return $this->redirectToRoute('admin_movies');
-        }
-
-        return $this->render('admin/admin_add_films.html.twig', [
-            'categories' => $categoryRepository->findAll(),
-            'languages'  => $languageRepository->findAll(),
-        ]);
-    }
-
-    #[Route('/admin/movies/{id}/delete', name: 'admin_movies_delete', methods: ['POST'])]
-    public function deleteMedia(Media $media, EntityManagerInterface $em, Request $request): Response
-    {
-        if ($this->isCsrfTokenValid('delete_media_' . $media->getId(), $request->request->get('_token'))) {
-            $em->remove($media);
-            $em->flush();
-            $this->addFlash('success', 'Média supprimé.');
-        }
-
-        return $this->redirectToRoute('admin_movies');
     }
 
     #[Route('/admin/users', name: 'admin_users')]
@@ -107,6 +40,31 @@ class AdminController extends AbstractController
         return $this->render('admin/admin_users.html.twig', [
             'users' => $repository->findAll(),
         ]);
+    }
+
+    #[Route('/admin/users/{id}/toggle-admin', name: 'admin_user_toggle_admin', methods: ['POST'])]
+    public function toggleAdmin(User $user, EntityManagerInterface $em, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('toggle_admin_' . $user->getId(), $request->request->get('_token'))) {
+            return $this->redirectToRoute('admin_users');
+        }
+
+        // Évite qu'un administrateur se retire ses propres droits par erreur
+        if ($user === $this->getUser()) {
+            $this->addFlash('error', 'Vous ne pouvez pas modifier vos propres droits.');
+            return $this->redirectToRoute('admin_users');
+        }
+
+        if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            $user->removeRole('ROLE_ADMIN');
+            $this->addFlash('success', "{$user->getUsername()} n'est plus administrateur.");
+        } else {
+            $user->addRole('ROLE_ADMIN');
+            $this->addFlash('success', "{$user->getUsername()} est maintenant administrateur.");
+        }
+        $em->flush();
+
+        return $this->redirectToRoute('admin_users');
     }
 
     #[Route('/admin/categories', name: 'admin_categories')]
