@@ -1,0 +1,153 @@
+{# Assistant IA : bouton flottant + fenêtre de discussion, présent sur toutes les pages #}
+<div id="assistant" class="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
+    <section id="assistant-panel" class="hidden w-[calc(100vw-2.5rem)] max-w-sm h-[32rem] max-h-[calc(100vh-7rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
+        <header class="flex items-center justify-between px-4 py-3 bg-red-600 text-white">
+            <div>
+                <p class="font-semibold">Assistant Streemi</p>
+                <p class="text-xs text-red-100">Dis-moi ce que tu as envie de regarder</p>
+            </div>
+            <div class="flex items-center gap-1">
+                {% if app.user %}
+                <button type="button" id="assistant-reset" title="Nouvelle conversation" class="p-1.5 rounded-lg hover:bg-red-700">
+                    <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/></svg>
+                </button>
+                {% endif %}
+                <button type="button" id="assistant-close" title="Fermer" class="p-1.5 rounded-lg hover:bg-red-700">
+                    <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/></svg>
+                </button>
+            </div>
+        </header>
+
+        {% if app.user %}
+            <div id="assistant-messages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+                <div class="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-3 py-2 max-w-[85%]">
+                    Salut {{ app.user.username }} ! Raconte-moi ton humeur, tes loisirs, avec qui tu regardes ou ce que tu as aimé récemment, et je te trouve un film, une série ou un animé.
+                </div>
+            </div>
+
+            <div id="assistant-chips" class="flex gap-2 overflow-x-auto px-3 py-2 border-t border-gray-100">
+                {% for chip in ['J\'ai envie de rire', 'Une soirée frissons', 'Un animé culte', 'Une histoire émouvante', 'De la science-fiction', 'Surprends-moi'] %}
+                    <button type="button" class="assistant-chip shrink-0 px-3 py-1.5 rounded-full border border-gray-200 text-xs text-gray-600 hover:border-red-600 hover:text-red-600">{{ chip }}</button>
+                {% endfor %}
+            </div>
+
+            <form id="assistant-form" class="flex items-center gap-2 p-3 border-t border-gray-200">
+                <input id="assistant-input" type="text" maxlength="500" autocomplete="off" required
+                       placeholder="Ex : je suis fatigué, un truc léger…"
+                       class="flex-1 px-3 py-2 rounded-lg bg-gray-100 border border-gray-200 focus:outline-none focus:border-gray-400 focus:bg-white">
+                <button type="submit" class="p-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50" title="Envoyer">
+                    <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
+                </button>
+            </form>
+        {% else %}
+            <div class="flex-1 flex flex-col items-center justify-center gap-4 p-6 text-center text-gray-600">
+                <p>Connecte-toi pour que l'assistant te propose des films, séries et animés selon tes envies.</p>
+                <a href="{{ path('app_login') }}" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-white text-xs">Se connecter</a>
+            </div>
+        {% endif %}
+    </section>
+
+    <button type="button" id="assistant-toggle" title="Assistant Streemi"
+            class="h-14 w-14 rounded-full bg-red-600 text-white shadow-lg hover:bg-red-700 hover:scale-105 transition flex items-center justify-center">
+        <svg class="h-7 w-7 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,3C17.5,3 22,6.58 22,11C22,15.42 17.5,19 12,19C10.76,19 9.57,18.82 8.47,18.5C5.55,21 2,21 2,21C4.33,18.67 4.7,17.1 4.75,16.5C3.05,15.07 2,13.13 2,11C2,6.58 6.5,3 12,3M17,12V10H15V12H17M13,12V10H11V12H13M9,12V10H7V12H9Z"/></svg>
+    </button>
+</div>
+
+<script>
+(() => {
+    const panel = document.getElementById('assistant-panel');
+    const toggle = () => {
+        panel.classList.toggle('hidden');
+        document.getElementById('assistant-input')?.focus();
+    };
+    document.getElementById('assistant-toggle').addEventListener('click', toggle);
+    document.getElementById('assistant-close').addEventListener('click', toggle);
+
+    const form = document.getElementById('assistant-form');
+    if (!form) return;
+
+    const csrf = '{{ app.user ? csrf_token('assistant') : '' }}';
+    const messages = document.getElementById('assistant-messages');
+    const input = document.getElementById('assistant-input');
+    const submit = form.querySelector('button[type="submit"]');
+
+    // Tout le texte passe par textContent : rien de ce que renvoie le serveur n'est interprété comme du HTML
+    const bubble = (text, fromUser) => {
+        const div = document.createElement('div');
+        div.className = fromUser
+            ? 'ml-auto bg-red-600 text-white rounded-2xl rounded-tr-sm px-3 py-2 max-w-[85%] w-fit'
+            : 'bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-3 py-2 max-w-[85%] w-fit';
+        div.textContent = text;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+        return div;
+    };
+
+    const cards = (medias) => {
+        const list = document.createElement('div');
+        list.className = 'grid grid-cols-2 gap-2';
+        for (const media of medias) {
+            const link = document.createElement('a');
+            link.href = media.url;
+            link.className = 'block rounded-xl overflow-hidden border border-gray-200 bg-white hover:scale-105 hover:shadow-md transition';
+            const img = document.createElement('img');
+            img.src = media.cover;
+            img.alt = '';
+            img.className = 'h-20 w-full object-cover';
+            const info = document.createElement('div');
+            info.className = 'px-2 py-1.5';
+            const title = document.createElement('p');
+            title.className = 'font-semibold text-xs truncate';
+            title.textContent = media.title;
+            const meta = document.createElement('p');
+            meta.className = 'text-[11px] text-gray-500';
+            meta.textContent = [media.type, media.year].filter(Boolean).join(' · ');
+            info.append(title, meta);
+            link.append(img, info);
+            list.appendChild(link);
+        }
+        messages.appendChild(list);
+        messages.scrollTop = messages.scrollHeight;
+    };
+
+    const send = async (text) => {
+        text = text.trim();
+        if (!text) return;
+        bubble(text, true);
+        input.value = '';
+        submit.disabled = true;
+        const typing = bubble('…', false);
+        typing.classList.add('animate-pulse');
+
+        try {
+            const response = await fetch('{{ path('assistant_message') }}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRF-Token': csrf},
+                body: JSON.stringify({message: text}),
+            });
+            const data = await response.json();
+            typing.remove();
+            bubble(data.reply ?? data.error ?? 'Une erreur est survenue.', false);
+            if (data.medias?.length) cards(data.medias);
+        } catch (e) {
+            typing.remove();
+            bubble('Impossible de joindre l\'assistant, réessaie.', false);
+        } finally {
+            submit.disabled = false;
+            input.focus();
+        }
+    };
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        send(input.value);
+    });
+    document.querySelectorAll('.assistant-chip').forEach((chip) => {
+        chip.addEventListener('click', () => send(chip.textContent));
+    });
+    document.getElementById('assistant-reset').addEventListener('click', async () => {
+        await fetch('{{ path('assistant_reset') }}', {method: 'POST', headers: {'X-CSRF-Token': csrf}});
+        messages.replaceChildren(messages.firstElementChild);
+    });
+})();
+</script>
