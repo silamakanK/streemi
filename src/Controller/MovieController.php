@@ -39,8 +39,12 @@ class MovieController extends AbstractController
 
     #[IsGranted('ROLE_USER')]
     #[Route('/watch/{id}', name: 'media_watch', methods: ['POST'])]
-    public function watch(Media $media, EntityManagerInterface $em, WatchHistoryRepository $watchHistoryRepository): Response
+    public function watch(Media $media, EntityManagerInterface $em, WatchHistoryRepository $watchHistoryRepository, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('watch_' . $media->getId(), $request->request->get('_token'))) {
+            return $this->redirectToRoute('movie_detail', ['id' => $media->getId()]);
+        }
+
         /** @var User $user */
         $user = $this->getUser();
 
@@ -83,7 +87,7 @@ class MovieController extends AbstractController
     {
         $content = trim($request->request->get('content', ''));
 
-        if ($content) {
+        if ($content && $this->isCsrfTokenValid('comment_' . $media->getId(), $request->request->get('_csrf_token'))) {
             /** @var User $user */
             $user = $this->getUser();
 

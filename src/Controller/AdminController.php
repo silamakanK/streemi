@@ -48,7 +48,7 @@ class AdminController extends AbstractController
         CategoryRepository $categoryRepository,
         LanguageRepository $languageRepository
     ): Response {
-        if ($request->isMethod('POST')) {
+        if ($request->isMethod('POST') && $this->isCsrfTokenValid('admin_add_media', $request->request->get('_csrf_token'))) {
             $type  = $request->request->get('type');
             $media = $type === 'serie' ? new Serie() : new Movie();
 

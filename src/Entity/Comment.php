@@ -137,7 +137,7 @@ class Comment
     private ?User $publisher = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Media $media = null;
 
     public function __construct()

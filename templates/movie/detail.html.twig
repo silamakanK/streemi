@@ -25,6 +25,7 @@
                     <div class="mt-4 flex items-center gap-3 flex-wrap">
                         {% if app.user %}
                         <form method="POST" action="{{ path('media_watch', {id: media.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('watch_' ~ media.id) }}">
                             <button type="submit" class="px-5 flex items-center py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-xs">
                                 <svg class="h-5 w-5 fill-current mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8,5.14V19.14L19,12.14L8,5.14Z"/></svg>
                                 Regarder
@@ -161,6 +162,9 @@
                         const input = document.createElement('input');
                         input.type = 'hidden'; input.name = 'redirect'; input.value = 'detail';
                         form.appendChild(input);
+                        const token = document.createElement('input');
+                        token.type = 'hidden'; token.name = '_token'; token.value = '{{ csrf_token('add_media_' ~ media.id) }}';
+                        form.appendChild(token);
                         document.body.appendChild(form);
                         form.submit();
                     });

@@ -30,6 +30,15 @@ class MyListController extends AbstractController
         $playlistId = $request->query->get('playlist');
         $selectedPlaylist = $playlistId ? $playlistRepository->find($playlistId) : null;
 
+        // On ne peut consulter que ses propres playlists ou celles auxquelles on est abonné
+        if ($selectedPlaylist && $selectedPlaylist->getCreator() !== $user) {
+            $isSubscribed = $user->getPlaylistSubscriptions()
+                ->exists(fn($key, $ps) => $ps->getPlaylist() === $selectedPlaylist);
+            if (!$isSubscribed) {
+                throw $this->createAccessDeniedException();
+            }
+        }
+
         return $this->render('lists.html.twig', [
             'myPlaylists'        => $user->getPlaylists(),
             'subscribedPlaylists' => $user->getPlaylistSubscriptions()
@@ -78,6 +87,10 @@ class MyListController extends AbstractController
 
         if (!$playlist || $playlist->getCreator() !== $user || !$media) {
             throw $this->createNotFoundException();
+        }
+
+        if (!$this->isCsrfTokenValid('add_media_' . $mediaId, $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
         }
 
         $alreadyIn = $playlistMediaRepository->findOneBy([

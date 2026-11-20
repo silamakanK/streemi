@@ -110,7 +110,7 @@ class WatchHistory
     private ?User $watcher = null;
 
     #[ORM\ManyToOne(inversedBy: 'watchHistories')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Media $media = null;
 
     public function getId(): ?int

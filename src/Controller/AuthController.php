@@ -15,6 +15,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
@@ -117,21 +118,28 @@ class AuthController extends AbstractController
         $sent = false;
 
         if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('forgot_password', $request->request->get('_csrf_token'))) {
+                return $this->render('auth/forgot.html.twig', ['sent' => false, 'error' => 'Token invalide, veuillez réessayer.']);
+            }
+
             $emailAddress = trim($request->request->get('email', ''));
             $user = $userRepository->findOneBy(['email' => $emailAddress]);
 
             if ($user) {
+                // Seul le hash est stocké : une fuite de la base ne donne pas de lien utilisable
                 $token = bin2hex(random_bytes(32));
-                $user->setResetToken($token);
+                $user->setResetToken(hash('sha256', $token));
+                $user->setResetTokenExpiresAt(new \DateTimeImmutable('+1 hour'));
                 $em->flush();
 
-                $resetUrl = $request->getSchemeAndHttpHost() . '/reset?token=' . $token;
+                $resetUrl = $this->generateUrl('reset_password', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL);
+                $username = htmlspecialchars($user->getUsername(), ENT_QUOTES);
                 $resetEmail = (new Email())
                     ->from('contact@streemi.com')
                     ->to($user->getEmail())
                     ->subject('Réinitialisation de votre mot de passe — Streemi')
                     ->html("
-                        <p>Bonjour <strong>{$user->getUsername()}</strong>,</p>
+                        <p>Bonjour <strong>{$username}</strong>,</p>
                         <p>Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe :</p>
                         <p><a href=\"{$resetUrl}\">{$resetUrl}</a></p>
                         <p>Ce lien est valable 1 heure. Si vous n'avez pas fait cette demande, ignorez cet email.</p>
@@ -153,9 +161,9 @@ class AuthController extends AbstractController
         UserPasswordHasherInterface $hasher
     ): Response {
         $token = $request->query->get('token') ?? $request->request->get('token', '');
-        $user  = $token ? $userRepository->findOneBy(['resetToken' => $token]) : null;
+        $user  = $token ? $userRepository->findOneBy(['resetToken' => hash('sha256', $token)]) : null;
 
-        if (!$user) {
+        if (!$user || $user->getResetTokenExpiresAt() < new \DateTimeImmutable()) {
             return $this->render('auth/reset.html.twig', ['invalid' => true, 'token' => '']);
         }
 
@@ -175,6 +183,7 @@ class AuthController extends AbstractController
 
             $user->setPassword($hasher->hashPassword($user, $password));
             $user->setResetToken(null);
+            $user->setResetTokenExpiresAt(null);
             $em->flush();
 
             $this->addFlash('success', 'Mot de passe réinitialisé. Vous pouvez vous connecter.');

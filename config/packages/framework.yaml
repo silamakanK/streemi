@@ -5,6 +5,9 @@ framework:
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 
+    # Empêche l'empoisonnement du lien de réinitialisation via l'en-tête Host
+    trusted_hosts: '%env(TRUSTED_HOSTS)%'
+
     #esi: true
     #fragments: true
 

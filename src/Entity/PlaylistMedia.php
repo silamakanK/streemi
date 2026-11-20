@@ -21,7 +21,7 @@ class PlaylistMedia
     private ?Playlist $playlist = null;
 
     #[ORM\ManyToOne(inversedBy: 'playlistMedia')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Media $media = null;
 
     public function getId(): ?int

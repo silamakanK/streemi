@@ -48,7 +48,7 @@ class MediaRepository extends ServiceEntityRepository
         // a popular media is a media that has often been added to playlists
         return $this->createQueryBuilder('m')
             ->select('m, COUNT(p) as HIDDEN nbPlaylists')
-            ->join('m.playlistMedia', 'p')
+            ->leftJoin('m.playlistMedia', 'p')
             ->groupBy('m.id')
             ->orderBy('nbPlaylists', 'DESC')
             ->setMaxResults(10)
