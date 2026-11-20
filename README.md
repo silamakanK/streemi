@@ -14,21 +14,26 @@ Plateforme de streaming (type Netflix) développé avec **Symfony 7** dans le ca
 | Templates | Twig |
 | CSS | Tailwind CSS (CDN) |
 | Emails (dev) | Mailpit (Docker) |
+| Connexion sociale | Google OAuth 2 (`knpuniversity/oauth2-client-bundle`) |
+| Assistant IA | Google Gemini (offre gratuite) |
 
 ---
 
 ## Fonctionnalités
 
-- **Authentification** — Inscription, connexion, déconnexion, réinitialisation de mot de passe
-- **Catalogue** — Films et séries avec casting, staff, saisons et épisodes
+- **Authentification** — Inscription, connexion, déconnexion, réinitialisation de mot de passe, **connexion avec Google**
+- **Catalogue** — Films, séries et animés avec casting, staff, saisons et épisodes
+- **Onglets Séries / Films / Animés** — Sur l'accueil et la page Découvrir
+- **Recommandations personnalisées** — « Recommandé pour vous » selon les médias regardés et consultés récemment
+- **Assistant IA** — Chatbot (bulle en bas à droite) qui propose des films, séries ou animés selon vos envies
 - **Catégories** — Navigation par genre avec chargement progressif
-- **Recherche** — Recherche full-text sur les titres
+- **Recherche** — Recherche sur les titres
 - **Commentaires** — Système de commentaires avec modération admin
 - **Playlists** — Créer des listes, ajouter/retirer des médias
 - **Historique** — Suivi des visionnages par utilisateur
 - **Abonnements** — Plans HD / 4K avec souscription
 - **Profil** — Modification du pseudo, email et mot de passe
-- **Admin** — Gestion des films, utilisateurs, catégories et commentaires
+- **Back-office** — Gestion des films, séries, saisons, épisodes, catégories, utilisateurs et commentaires (voir [Back-office](#back-office))
 
 ---
 
@@ -38,6 +43,7 @@ Plateforme de streaming (type Netflix) développé avec **Symfony 7** dans le ca
 - Composer
 - Docker et Docker Compose
 - Symfony CLI (`symfony server:start`)
+- *(optionnel)* Un compte Google pour la connexion Google et l'assistant IA
 
 ---
 
@@ -76,6 +82,37 @@ MAILER_DSN=smtp://localhost:1025
 APP_ENV=dev
 ```
 
+Les **clés secrètes** (Google, Gemini) ne doivent jamais être commitées : mettez-les dans un fichier **`.env.local`** à la racine du projet (il est ignoré par git).
+
+```env
+# .env.local
+
+# Connexion avec Google (voir « Connexion avec Google » ci-dessous)
+OAUTH_GOOGLE_CLIENT_ID=xxxxxxxx.apps.googleusercontent.com
+OAUTH_GOOGLE_CLIENT_SECRET=xxxxxxxx
+
+# Assistant IA (voir « Assistant IA » ci-dessous)
+GEMINI_API_KEY=xxxxxxxx
+```
+
+| Variable | Obligatoire | Rôle | Valeur par défaut (`.env`) |
+|---|---|---|---|
+| `OAUTH_GOOGLE_CLIENT_ID` | Non* | Identifiant client OAuth Google | vide |
+| `OAUTH_GOOGLE_CLIENT_SECRET` | Non* | Secret client OAuth Google | vide |
+| `GEMINI_API_KEY` | Non* | Clé API Gemini pour l'assistant | vide |
+| `GEMINI_MODEL` | Non | Modèle Gemini utilisé par l'assistant | `gemini-3.5-flash-lite` |
+| `TRUSTED_HOSTS` | Non | Noms d'hôte autorisés (regex) | `^(localhost\|127\.0\.0\.1)$` |
+
+\* Le site fonctionne sans ces clés : le bouton Google et l'assistant affichent simplement un message indiquant qu'ils ne sont pas configurés.
+
+> ⚠️ Ouvrez le site via `127.0.0.1` ou `localhost` : ce sont les seuls noms d'hôte autorisés par `TRUSTED_HOSTS` (protection contre l'empoisonnement des liens de réinitialisation de mot de passe). Pour un autre domaine, ajoutez-le dans `.env.local`.
+
+Après toute modification de `.env.local` :
+
+```bash
+php bin/console cache:clear
+```
+
 ### 5. Créer la base de données et appliquer les migrations
 
 ```bash
@@ -92,7 +129,8 @@ php bin/console doctrine:fixtures:load --no-interaction
 Cela génère :
 - 10 utilisateurs de test + 1 admin + 1 démo
 - 100 médias (films et séries aléatoires)
-- Des catégories, langues, playlists, abonnements, commentaires
+- 24 animés réels, classiques et récents (Akira, Le Voyage de Chihiro, Death Note, L'Attaque des Titans, Frieren…)
+- Des catégories (dont « Animation »), langues, playlists, abonnements, commentaires
 
 ### 7. Lancer le serveur
 
@@ -114,11 +152,73 @@ L'application est accessible sur **http://127.0.0.1:8000**
 
 ---
 
+## Connexion avec Google
+
+1. Ouvrez la [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → **Créer des identifiants** → **ID client OAuth** → type **Application Web**.
+   - Si demandé, configurez d'abord l'**écran de consentement OAuth** (type « Externe ») et ajoutez votre adresse Gmail dans les **utilisateurs test**.
+2. Dans **URI de redirection autorisés**, ajoutez exactement :
+   ```
+   http://127.0.0.1:8000/connect/google/check
+   ```
+   (et `http://localhost:8000/connect/google/check` si vous utilisez `localhost`).
+3. Copiez l'ID client et le secret dans `.env.local` (`OAUTH_GOOGLE_CLIENT_ID`, `OAUTH_GOOGLE_CLIENT_SECRET`), puis `php bin/console cache:clear`.
+
+Comportement :
+- Si un compte existe déjà avec la même adresse email, il est relié à Google.
+- Sinon, un compte est créé automatiquement (avec un mot de passe aléatoire, utilisable via « mot de passe oublié »).
+- Les adresses Google non vérifiées sont refusées.
+
+**Erreurs fréquentes** : `redirect_uri_mismatch` → l'URI déclarée chez Google ne correspond pas exactement à l'adresse utilisée ; `access_denied` → votre compte n'est pas dans les utilisateurs test.
+
+---
+
+## Assistant IA
+
+Une bulle rouge en bas à droite de chaque page ouvre un chat : l'utilisateur décrit son humeur, ses loisirs ou ce qu'il a aimé, et l'assistant propose 1 à 4 médias **du catalogue** sous forme de cartes cliquables. Il tient compte de l'historique de visionnage et se souvient de la conversation (bouton ↻ pour recommencer). Réservé aux utilisateurs connectés.
+
+Configuration :
+1. Créez une clé gratuite sur **https://aistudio.google.com/apikey**.
+2. Ajoutez-la dans `.env.local` : `GEMINI_API_KEY=...`, puis `php bin/console cache:clear`.
+
+À savoir :
+- L'offre gratuite de Gemini est **limitée en requêtes par minute et par jour** (quotas visibles dans AI Studio). Quand la limite est atteinte, l'assistant l'indique.
+- En offre gratuite, Google peut utiliser les conversations pour améliorer ses modèles : n'y saisissez pas d'informations personnelles.
+- Pour des réponses plus fines (un peu plus lentes), mettez `GEMINI_MODEL=gemini-3.8-flash` dans `.env.local`.
+- Les identifiants renvoyés par l'IA sont revérifiés côté serveur : elle ne peut proposer que des médias existants.
+- En cas d'erreur, le détail est dans `var/log/dev.log` (lignes « Assistant : … »).
+
+---
+
+## Back-office
+
+Accessible depuis **Administration** dans le menu de gauche (compte avec `ROLE_ADMIN`, par exemple `admin@example.com`).
+
+| Section | URL | Possibilités |
+|---|---|---|
+| Tableau de bord | `/admin` | Nombre de films, séries, animés et comptes |
+| Films / Séries | `/admin/movies` | Recherche, filtres (type, catégorie), pagination ; ajout, modification, suppression |
+| Saisons et épisodes | `/admin/series/{id}/seasons` | Ajouter / renommer / supprimer des saisons ; ajouter / modifier / supprimer des épisodes |
+| Catégories | `/admin/categories` | Ajouter, renommer, supprimer ; lien vers les médias de chaque catégorie |
+| Utilisateurs | `/admin/users` | Nommer ou retirer un administrateur |
+| Commentaires | `/admin/comments` | Valider ou rejeter les commentaires |
+
+Détails utiles :
+- **Animés** : un média apparaît dans l'onglet Animés s'il a la catégorie **« Animation »**. Cette catégorie est protégée (non renommable, non supprimable).
+- **Images de couverture** : envoyez une image depuis votre ordinateur (JPG, PNG, WebP, GIF) ou collez une URL. Les images envoyées sont stockées dans `public/uploads/covers/` (non versionné) et supprimées quand elles sont remplacées ou que le média est supprimé.
+- **Taille maximale des images** : 5 Mo, dans la limite de `upload_max_filesize` de PHP (2 Mo par défaut). Pour l'augmenter, créez un `php.ini` à la racine du projet (pris en compte par `symfony server:start`) :
+  ```ini
+  upload_max_filesize = 5M
+  post_max_size = 8M
+  ```
+- Supprimer une série supprime aussi ses saisons, épisodes, commentaires et son historique de visionnage.
+
+---
+
 ## Pages principales
 
 | URL | Description |
 |---|---|
-| `/` | Accueil — médias populaires |
+| `/` | Accueil — onglets Séries / Films / Animés, tendances, recommandations |
 | `/discover` | Découverte par catégorie |
 | `/category/{id}` | Médias d'une catégorie |
 | `/detail/{id}` | Page de détail d'un média |
@@ -127,7 +227,8 @@ L'application est accessible sur **http://127.0.0.1:8000**
 | `/history` | Historique de visionnage |
 | `/subscriptions` | Plans d'abonnement |
 | `/profile` | Mon profil |
-| `/admin` | Panel d'administration (ROLE_ADMIN) |
+| `/connect/google` | Connexion avec Google |
+| `/admin` | Back-office (ROLE_ADMIN) |
 
 ---
 
@@ -141,11 +242,14 @@ Consultez l'interface web sur **http://localhost:8025** pour les lire.
 ## Commandes utiles
 
 ```bash
-# Vider le cache
+# Vider le cache (après chaque modification de .env.local)
 php bin/console cache:clear
 
 # Voir toutes les routes
 php bin/console debug:router
+
+# Vérifier les variables d'environnement chargées
+php bin/console debug:dotenv
 
 # Relancer les fixtures (remet la BDD à zéro)
 php bin/console doctrine:fixtures:load --no-interaction
@@ -161,16 +265,20 @@ docker compose down
 ```
 streemi/
 ├── src/
-│   ├── Controller/     # Contrôleurs Symfony
+│   ├── Controller/
+│   │   └── Admin/      # Back-office (médias, saisons/épisodes, catégories)
 │   ├── Entity/         # Entités Doctrine (Media, User, Playlist…)
 │   ├── Repository/     # Requêtes BDD
-│   ├── Enum/           # Enums PHP (CommentStatus, UserStatus…)
+│   ├── Enum/           # Enums PHP (CatalogType, CommentStatus, UserStatus…)
+│   ├── Security/       # Authentification Google
+│   ├── Service/        # Recommandations, assistant IA, upload des couvertures
 │   └── DataFixtures/   # Données de test
 ├── templates/
 │   ├── auth/           # Login, inscription, reset password
-│   ├── admin/          # Panel admin
+│   ├── admin/          # Back-office
 │   ├── movie/          # Détail film/série
-│   └── parts/          # Composants réutilisables (menu, sidebar…)
+│   └── parts/          # Composants réutilisables (menu, onglets, assistant…)
+├── public/uploads/     # Images de couverture envoyées (non versionné)
 ├── config/             # Configuration Symfony
 ├── migrations/         # Migrations Doctrine
 └── compose.yaml        # Docker Compose (PostgreSQL + Mailpit)
