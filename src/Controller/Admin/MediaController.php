@@ -11,6 +11,7 @@ use App\Enum\CatalogTypeEnum;
 use App\Repository\CategoryRepository;
 use App\Repository\LanguageRepository;
 use App\Repository\MediaRepository;
+use App\Service\CoverUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,6 +29,7 @@ class MediaController extends AbstractController
         private EntityManagerInterface $em,
         private CategoryRepository $categoryRepository,
         private LanguageRepository $languageRepository,
+        private CoverUploader $coverUploader,
     ) {}
 
     #[Route('', name: 'admin_movies')]
@@ -96,6 +98,7 @@ class MediaController extends AbstractController
         if ($this->isCsrfTokenValid('delete_media_' . $media->getId(), $request->request->get('_token'))) {
             $this->em->remove($media);
             $this->em->flush();
+            $this->coverUploader->remove($media->getCoverImage());
             $this->addFlash('success', "« {$media->getTitle()} » a été supprimé.");
         }
 
@@ -110,6 +113,7 @@ class MediaController extends AbstractController
             'errors'     => $errors,
             'categories' => $this->categoryRepository->findBy([], ['nom' => 'ASC']),
             'languages'  => $this->languageRepository->findBy([], ['nom' => 'ASC']),
+            'maxUploadMb' => $this->coverUploader->maxSizeInMb(),
         ], new Response(status: $errors ? 422 : 200));
     }
 
@@ -127,6 +131,7 @@ class MediaController extends AbstractController
         }
 
         $data = $request->request;
+        $previousCover = $media->getCoverImage();
 
         $title = trim($data->getString('title'));
         $media->setTitle($title);
@@ -146,10 +151,19 @@ class MediaController extends AbstractController
             $errors['long_description'] = 'La description longue est obligatoire.';
         }
 
+        // Couverture : soit une image envoyée depuis l'ordinateur, soit une URL (ou l'image déjà envoyée)
         $cover = trim($data->getString('cover'));
         $media->setCoverImage($cover);
-        if (!$this->isHttpUrl($cover)) {
-            $errors['cover'] = 'Indiquez l\'URL complète d\'une image (https://…).';
+        $file = $request->files->get('cover_file');
+        if ($file) {
+            if ($error = $this->coverUploader->validate($file)) {
+                $errors['cover'] = $error;
+            } else {
+                // Enregistrée tout de suite : si un autre champ est en erreur, l'image reste affichée sans la renvoyer
+                $media->setCoverImage($this->coverUploader->upload($file));
+            }
+        } elseif (!$this->isHttpUrl($cover) && !CoverUploader::isUploaded($cover)) {
+            $errors['cover'] = 'Envoyez une image ou indiquez l\'URL complète d\'une image (https://…).';
         }
 
         $releaseDate = \DateTime::createFromFormat('!Y-m-d', $data->getString('release_date'));
@@ -178,6 +192,11 @@ class MediaController extends AbstractController
 
         $media->setStaff($this->readPeople($data->all('staff'), 'staff', $errors));
         $media->setCasting($this->readPeople($data->all('casting'), 'casting', $errors));
+
+        // L'ancienne image envoyée sur le site n'est supprimée qu'une fois la modification validée
+        if (!$errors && $previousCover !== $media->getCoverImage()) {
+            $this->coverUploader->remove($previousCover);
+        }
 
         return $errors;
     }
