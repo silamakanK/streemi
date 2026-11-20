@@ -21,12 +21,9 @@
         </header>
 
         <section>
-            <nav class="flex space-x-6 text-gray-400 font-medium">
-                <a href="#" class="hover:text-gray-700">Séries</a>
-                <a href="#" class="text-gray-700 font-semibold">Films</a>
-                <a href="#" class="hover:text-gray-700 ">Animés</a>
-            </nav>
+            {% include 'parts/structure/catalog-tabs.html.twig' %}
 
+            {% if lastWatched %}
             <div class="flex flex-col justify-between mt-4 bg-black/10 bg-blend-multiply rounded-3xl h-80 overflow-hidden bg-cover bg-center px-7 pt-4 pb-6 text-white"
                  style="background-image: url('{{ lastWatched.coverImage }}');" >
                 <div class="flex -space-x-1 items-center ">
@@ -48,7 +45,7 @@
                         <div class="flex space-x-3 items-center">
                             <a href="{{ path('movie_detail', {id: lastWatched.id}) }}" class="px-5 flex py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-xs inline-block">
                                 <svg class="h-4 w-4 fill-current mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>play-box</title><path d="M19 3H5C3.89 3 3 3.89 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.89 20.1 3 19 3M10 16V8L15 12" /></svg>
-                                Reprendre la lecture
+                                {{ isResume ? 'Reprendre la lecture' : 'Découvrir' }}
                             </a>
                             <a href="#" class="p-2.5 bg-gray-800/80 rounded-lg hover:bg-red-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -56,13 +53,27 @@
                                 </svg>
                             </a>
                         </div>
-                        <div class="text-right">
-                            <span class="ml-2 bg-white/30 py-1 px-3 text-xxs rounded">1h42m restants</span>
-                        </div>
                     </div>
                 </div>
             </div>
+            {% else %}
+                <p class="mt-4 rounded-3xl border border-dashed p-10 text-center text-gray-500">Aucun contenu dans « {{ type.label }} » pour le moment.</p>
+            {% endif %}
         </section>
+
+        {% if recommendations.medias is not empty %}
+        <section class="mt-9">
+            <div class="flex items-baseline justify-between gap-4">
+                <span class="font-semibold text-gray-700 text-base">Recommandé pour vous</span>
+                <span class="text-xs text-gray-400 truncate">Parce que vous aimez {{ recommendations.topCategories|join(', ', ' et ') }}</span>
+            </div>
+            <ul class="mt-4 grid grid-cols-2 gap-y-5 sm:grid-cols-3 gap-x-5 ">
+                {% for media in recommendations.medias %}
+                    {% include 'parts/pages/movies/small_square_movie_card.html.twig' %}
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
 
         <section class="mt-9">
             <div class="flex items-center justify-between">

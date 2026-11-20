@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Category;
+use App\Enum\CatalogTypeEnum;
 use App\Repository\CategoryRepository;
 use App\Repository\MediaRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,11 +16,14 @@ use Symfony\Component\Routing\Attribute\Route;
 class CategoryController extends AbstractController
 {
     #[Route('/discover', name: 'movie_discover')]
-    public function discover(CategoryRepository $categoryRepository, MediaRepository $mediaRepository): Response
+    public function discover(CategoryRepository $categoryRepository, MediaRepository $mediaRepository, Request $request): Response
     {
+        $type = CatalogTypeEnum::tryFrom($request->query->getString('type')) ?? CatalogTypeEnum::MOVIE;
+
         return $this->render('discover.html.twig', [
+            'type' => $type,
             'categories' => $categoryRepository->findAll(),
-            'popularMedias' => $mediaRepository->findPopular(),
+            'popularMedias' => $mediaRepository->findPopular($type),
         ]);
     }
 

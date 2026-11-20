@@ -7,7 +7,7 @@
         </button>
         <img src="{{ media.coverImage }}" class=" h-4/5 object-cover w-full object-top" alt="">
         <div class="w-full h-full bg-white px-3 flex items-center justify-between border-t-2 border-t-red-600">
-            <span class="capitalize font-medium pr-2"><span class="text-red-600 font-bold">#1</span> - {{ media.title }}</span>
+            <span class="capitalize font-medium pr-2"><span class="text-red-600 font-bold">#{{ loop.index ?? 1 }}</span> - {{ media.title }}</span>
             <div class="flex space-x-2 items-center text-xs">
                 <svg class="w-8 h-5" xmlns="http://www.w3.org/2000/svg" width="64" height="32" viewBox="0 0 64 32" version="1.1">
                     <g fill="#F5C518">  

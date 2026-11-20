@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Entity\WatchHistory;
 use App\Enum\CommentStatusEnum;
 use App\Repository\WatchHistoryRepository;
+use App\Service\RecommendationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,8 +21,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class MovieController extends AbstractController
 {
     #[Route('/detail/{id}', name: 'movie_detail')]
-    public function detail(Media $media, WatchHistoryRepository $watchHistoryRepository): Response
+    public function detail(Media $media, WatchHistoryRepository $watchHistoryRepository, RecommendationService $recommendationService): Response
     {
+        $recommendationService->recordView($media);
+
         /** @var User|null $user */
         $user = $this->getUser();
 

@@ -4,7 +4,12 @@ namespace App\Repository;
 
 use App\Entity\Media;
 use App\Entity\Category;
+use App\Entity\Movie;
+use App\Entity\Serie;
+use App\Entity\User;
+use App\Enum\CatalogTypeEnum;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 
@@ -43,17 +48,97 @@ class MediaRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findPopular()
+    /** @return Media[] */
+    public function findPopular(?CatalogTypeEnum $type = null, int $limit = 10): array
     {
         // a popular media is a media that has often been added to playlists
-        return $this->createQueryBuilder('m')
+        $qb = $this->createQueryBuilder('m')
             ->select('m, COUNT(p) as HIDDEN nbPlaylists')
             ->leftJoin('m.playlistMedia', 'p')
             ->groupBy('m.id')
             ->orderBy('nbPlaylists', 'DESC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult();
+            ->addOrderBy('m.releaseDate', 'DESC')
+            ->setMaxResults($limit);
+
+        return $this->filterByCatalogType($qb, $type)->getQuery()->getResult();
+    }
+
+    public function findLastWatchedBy(User $user, ?CatalogTypeEnum $type = null): ?Media
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->join('m.watchHistories', 'w')
+            ->where('w.watcher = :user')
+            ->setParameter('user', $user)
+            ->orderBy('w.lastWatchedAt', 'DESC')
+            ->setMaxResults(1);
+
+        return $this->filterByCatalogType($qb, $type)->getQuery()->getOneOrNullResult();
+    }
+
+    public function findLatest(?CatalogTypeEnum $type = null): ?Media
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->orderBy('m.releaseDate', 'DESC')
+            ->setMaxResults(1);
+
+        return $this->filterByCatalogType($qb, $type)->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * Médias les mieux notés selon un profil de goûts (poids par catégorie).
+     *
+     * @param array<int, float> $categoryWeights id de catégorie => poids
+     * @param int[]             $excludedIds     médias déjà vus
+     * @return Media[]
+     */
+    public function findByCategoryWeights(array $categoryWeights, array $excludedIds, ?CatalogTypeEnum $type, int $limit): array
+    {
+        if (!$categoryWeights) {
+            return [];
+        }
+
+        // Les valeurs sont des int/float calculés côté serveur : on peut les écrire directement dans le CASE
+        $cases = '';
+        foreach ($categoryWeights as $categoryId => $weight) {
+            $cases .= sprintf(' WHEN cat.id = %d THEN %.4F', $categoryId, $weight);
+        }
+
+        $qb = $this->createQueryBuilder('m')
+            ->select('m, SUM(CASE' . $cases . ' ELSE 0 END) AS HIDDEN score')
+            ->join('m.categories', 'cat')
+            ->where('cat.id IN (:categories)')
+            ->setParameter('categories', array_keys($categoryWeights))
+            ->groupBy('m.id')
+            ->orderBy('score', 'DESC')
+            ->addOrderBy('m.releaseDate', 'DESC')
+            ->setMaxResults($limit);
+
+        if ($excludedIds) {
+            $qb->andWhere('m.id NOT IN (:excluded)')->setParameter('excluded', $excludedIds);
+        }
+
+        return $this->filterByCatalogType($qb, $type)->getQuery()->getResult();
+    }
+
+    public function filterByCatalogType(QueryBuilder $qb, ?CatalogTypeEnum $type): QueryBuilder
+    {
+        if (!$type) {
+            return $qb;
+        }
+
+        $alias = $qb->getRootAliases()[0];
+        $isAnimation = sprintf(
+            'EXISTS (SELECT anim.id FROM %s anim JOIN anim.medias animMedia WHERE animMedia = %s AND anim.nom = :animationCategory)',
+            Category::class,
+            $alias
+        );
+        $qb->setParameter('animationCategory', CatalogTypeEnum::ANIMATION_CATEGORY);
+
+        return match ($type) {
+            CatalogTypeEnum::ANIME => $qb->andWhere($isAnimation),
+            CatalogTypeEnum::MOVIE => $qb->andWhere(sprintf('%s INSTANCE OF %s AND NOT %s', $alias, Movie::class, $isAnimation)),
+            CatalogTypeEnum::SERIE => $qb->andWhere(sprintf('%s INSTANCE OF %s AND NOT %s', $alias, Serie::class, $isAnimation)),
+        };
     }
 
 }

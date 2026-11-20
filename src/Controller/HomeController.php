@@ -4,33 +4,38 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Category;
 use App\Entity\User;
-use App\Repository\CategoryRepository;
+use App\Enum\CatalogTypeEnum;
 use App\Repository\MediaRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\RecommendationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 
 class HomeController extends AbstractController
 {
     #[Route('/', name: 'homepage')]
     public function __invoke(
+        Request $request,
         MediaRepository $repository,
-        EntityManagerInterface $entityManager
+        RecommendationService $recommendationService,
     ): Response
     {
-        $lastWatched = $repository->findOneBy([], ['id' => 'DESC']);
+        $type = CatalogTypeEnum::tryFrom($request->query->getString('type')) ?? CatalogTypeEnum::MOVIE;
+
+        /** @var User|null $user */
+        $user = $this->getUser();
+
+        // Bandeau : le dernier média regardé de cet onglet, sinon le plus récent
+        $lastWatched = $user ? $repository->findLastWatchedBy($user, $type) : null;
 
         return $this->render('index.html.twig', [
-            'medias' => $repository->findPopular(),
-            'lastWatched' => $lastWatched,
+            'type'            => $type,
+            'medias'          => $repository->findPopular($type),
+            'lastWatched'     => $lastWatched ?? $repository->findLatest($type),
+            'isResume'        => $lastWatched !== null,
+            'recommendations' => $recommendationService->recommend($user, $type),
         ]);
     }
 }

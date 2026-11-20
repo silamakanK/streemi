@@ -179,6 +179,7 @@ class AppFixtures extends Fixture
             ['nom' => 'Horreur', 'label' => 'Horreur'],
             ['nom' => 'Science-fiction', 'label' => 'Science-fiction'],
             ['nom' => 'Thriller', 'label' => 'Thriller'],
+            ['nom' => 'Animation', 'label' => 'Animation'],
         ];
 
         foreach ($array as $element) {

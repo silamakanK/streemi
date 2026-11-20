@@ -20,11 +20,7 @@
         </header>
 
         <section>
-            <nav class="flex space-x-6 text-gray-400 font-medium">
-                <a href="#" class="hover:text-gray-700">Séries</a>
-                <a href="#" class="text-gray-700 font-semibold">Films</a>
-                <a href="#" class="hover:text-gray-700 ">Animés</a>
-            </nav>
+            {% include 'parts/structure/catalog-tabs.html.twig' %}
 
             <div class="flex flex-col items-center mt-9">
                 <a class="relative flex w-full flex-row p-3 items-center justify-center rounded-lg overflow-hidden border hover:scale-105 cursor-pointer transition hover:bg-gray-100">
