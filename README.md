@@ -260,6 +260,33 @@ docker compose down
 
 ---
 
+## Tests
+
+```bash
+composer test
+```
+
+Cette commande recrée la base de test (`app_test`), applique les migrations, charge les fixtures puis lance les ~100 tests PHPUnit. Docker doit être démarré.
+
+Pour relancer les tests sans recréer la base (plus rapide) :
+
+```bash
+php bin/phpunit                                    # tous les tests
+php bin/phpunit tests/Functional/Admin             # un dossier
+php bin/phpunit --filter testCreateAMovie          # un test précis
+```
+
+| Dossier | Contenu |
+|---|---|
+| `tests/Unit` | Code sans base de données (upload des couvertures, onglets) |
+| `tests/Integration` | Requêtes du catalogue, assistant IA (réponses Gemini simulées, aucun appel réseau) |
+| `tests/Functional` | Parcours dans le navigateur de test : sécurité, inscription, mot de passe oublié, onglets, recommandations, playlists, commentaires, assistant |
+| `tests/Functional/Admin` | Back-office : médias, saisons/épisodes, catégories, utilisateurs, upload d'images |
+
+Chaque test s'exécute dans une transaction annulée à la fin (`dama/doctrine-test-bundle`) : les tests ne modifient pas la base et peuvent être relancés à volonté. En environnement de test, aucun email n'est envoyé et aucune clé Google / Gemini n'est utilisée.
+
+---
+
 ## Structure du projet
 
 ```
@@ -281,5 +308,6 @@ streemi/
 ├── public/uploads/     # Images de couverture envoyées (non versionné)
 ├── config/             # Configuration Symfony
 ├── migrations/         # Migrations Doctrine
+├── tests/              # Tests PHPUnit (unitaires, intégration, fonctionnels)
 └── compose.yaml        # Docker Compose (PostgreSQL + Mailpit)
 ```

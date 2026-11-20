@@ -54,7 +54,7 @@ class MyListController extends AbstractController
         $user = $this->getUser();
         $name = trim($request->request->get('name', ''));
 
-        if ($name) {
+        if ($name && $this->isCsrfTokenValid('playlist_create', $request->request->get('_token'))) {
             $playlist = new Playlist();
             $playlist->setName($name);
             $playlist->setCreator($user);

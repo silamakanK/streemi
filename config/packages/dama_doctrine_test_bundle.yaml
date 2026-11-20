@@ -1,0 +1,6 @@
+when@test:
+    # Chaque test s'exécute dans une transaction annulée à la fin : la base de test reste intacte
+    dama_doctrine_test:
+        enable_static_connection: true
+        enable_static_meta_data_cache: true
+        enable_static_query_cache: true
