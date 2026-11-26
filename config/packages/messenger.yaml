@@ -27,3 +27,11 @@ framework:
 
             # Route your messages to the transports
             # 'App\Message\YourMessage': async
+
+when@dev:
+    framework:
+        messenger:
+            transports:
+                # En dev, les emails partent tout de suite vers Mailpit, sans lancer de worker
+                # (en production, ils restent dans la file d'attente « async »)
+                async: 'sync://'

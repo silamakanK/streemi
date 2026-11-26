@@ -287,6 +287,12 @@ Chaque test s'exécute dans une transaction annulée à la fin (`dama/doctrine-t
 
 ---
 
+## Déploiement
+
+L'application se déploie sur **AWS EC2** avec Docker (FrankenPHP, HTTPS automatique) et un pipeline **GitHub Actions** : tests, puis image Docker, puis déploiement à chaque push sur `main`. Le guide complet est dans **[DEPLOY.md](DEPLOY.md)**.
+
+---
+
 ## Structure du projet
 
 ```
@@ -309,5 +315,10 @@ streemi/
 ├── config/             # Configuration Symfony
 ├── migrations/         # Migrations Doctrine
 ├── tests/              # Tests PHPUnit (unitaires, intégration, fonctionnels)
-└── compose.yaml        # Docker Compose (PostgreSQL + Mailpit)
+├── docker/             # Configuration de l'image de production (Caddy, PHP, démarrage)
+├── deploy/             # Scripts du serveur EC2 (installation, sauvegardes, modèle .env.prod)
+├── .github/workflows/  # Pipeline CI/CD
+├── Dockerfile          # Image de production
+├── compose.prod.yaml   # Conteneurs de production
+└── compose.yaml        # Docker Compose de dev (PostgreSQL + Mailpit)
 ```

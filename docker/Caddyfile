@@ -1,0 +1,24 @@
+{
+	{$CADDY_GLOBAL_OPTIONS}
+	frankenphp
+}
+
+# SERVER_NAME = le nom de domaine (ex : streemi.mondomaine.fr) : Caddy obtient et renouvelle
+# automatiquement le certificat HTTPS Let's Encrypt. Avec « :80 », le site est servi en HTTP simple.
+{$SERVER_NAME:localhost} {
+	root /app/public
+	encode zstd br gzip
+
+	request_body {
+		max_size 10MB
+	}
+
+	header {
+		-Server
+		X-Content-Type-Options nosniff
+		X-Frame-Options SAMEORIGIN
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+
+	php_server
+}

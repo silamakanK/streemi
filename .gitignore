@@ -30,3 +30,8 @@
 /public/uploads/covers/*
 !/public/uploads/covers/.gitkeep
 ###< uploads ###
+
+###> déploiement ###
+# Secrets de production : uniquement sur le serveur, jamais dans git
+/.env.prod
+###< déploiement ###

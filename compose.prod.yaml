@@ -1,0 +1,52 @@
+# Production : docker compose -f compose.prod.yaml up -d
+# Les variables (domaine, mots de passe, clés API) sont lues dans .env.prod, présent uniquement sur le serveur.
+
+services:
+  app:
+    image: ${IMAGE:-ghcr.io/silamakank/streemi:latest}
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      RUN_MIGRATIONS: "1"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp" # HTTP/3
+    volumes:
+      - caddy_data:/data     # certificats HTTPS (à conserver pour ne pas en redemander à chaque déploiement)
+      - caddy_config:/config
+      - uploads:/app/public/uploads
+    depends_on:
+      database:
+        condition: service_healthy
+
+  # Envoie les emails mis en file d'attente (mot de passe oublié...)
+  worker:
+    image: ${IMAGE:-ghcr.io/silamakank/streemi:latest}
+    restart: unless-stopped
+    env_file: .env.prod
+    command: ["php", "bin/console", "messenger:consume", "async", "--time-limit=3600", "--memory-limit=128M"]
+    # Le contrôle de santé de l'image vérifie le serveur web, que ce conteneur ne lance pas
+    healthcheck:
+      disable: true
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: .env.prod
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - database_data:/var/lib/postgresql/data
+
+volumes:
+  caddy_data:
+  caddy_config:
+  uploads:
+  database_data:
