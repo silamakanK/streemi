@@ -291,6 +291,59 @@ Chaque test s'exécute dans une transaction annulée à la fin (`dama/doctrine-t
 
 L'application se déploie sur **AWS EC2** avec Docker (FrankenPHP, HTTPS automatique) et un pipeline **GitHub Actions** : tests, puis image Docker, puis déploiement à chaque push sur `main`. Le guide complet est dans **[DEPLOY.md](DEPLOY.md)**.
 
+### Production actuelle
+
+| | |
+|---|---|
+| **URL** | https://15-224-8-36.sslip.io |
+| **Serveur** | AWS EC2, région **Europe (Paris) eu-west-3**, Ubuntu 24.04, IP Elastic `15.224.8.36` |
+| **Conteneurs** | `app` (FrankenPHP + Caddy), `worker` (emails), `database` (PostgreSQL 16) |
+| **Domaine** | [sslip.io](https://sslip.io) : l'IP écrite **avec des tirets** sert de nom de domaine, sans rien acheter |
+| **Certificat HTTPS** | Let's Encrypt, obtenu et renouvelé automatiquement par Caddy |
+
+### Étapes réalisées
+
+1. **Instance EC2** créée à Paris : `t3.micro`, 20 Go de stockage, système de fichiers « Aucun » (les données sont dans les volumes Docker), groupe de sécurité ouvert sur les ports 22, 80 et 443, puis IP Elastic associée.
+2. **Serveur préparé** avec `deploy/setup-ec2.sh` (Docker et swap), puis `~/streemi/.env.prod` créé à partir de `deploy/.env.prod.example`.
+3. **GitHub Actions configuré** (Settings → Secrets and variables → Actions) :
+   - variables `EC2_HOST` = `15.224.8.36` et `EC2_USER` = `ubuntu`
+   - secret `EC2_SSH_KEY` = le contenu de la clé `.pem`
+4. **Premier déploiement** avec `git push origin main` : tests, image publiée sur ghcr.io, puis mise à jour des conteneurs par SSH.
+5. **Catalogue copié** depuis la base locale, car la production démarre vide et les fixtures sont réservées au dev :
+   ```bash
+   # En local
+   docker compose up -d
+   docker compose exec -T database pg_dump -U app --clean --if-exists --no-owner app > streemi.sql
+   scp -i Streemi.pem streemi.sql ubuntu@15.224.8.36:~
+
+   # Sur le serveur
+   cd ~/streemi
+   docker compose -f compose.prod.yaml exec -T database sh -c 'psql -U "$POSTGRES_USER" "$POSTGRES_DB"' < ~/streemi.sql
+   docker compose -f compose.prod.yaml exec app php bin/console cache:clear
+   rm ~/streemi.sql
+   ```
+   Cette copie **remplace** toute la base de production, comptes utilisateurs compris. Ne commitez jamais `streemi.sql`.
+6. **Administrateur créé** sur le serveur :
+   ```bash
+   docker compose -f compose.prod.yaml exec app php bin/console app:user:promote email@exemple.com
+   ```
+7. **Google et Gemini activés** en production :
+   - ajout de `OAUTH_GOOGLE_CLIENT_ID`, `OAUTH_GOOGLE_CLIENT_SECRET` et `GEMINI_API_KEY` dans `~/streemi/.env.prod`, puis `docker compose -f compose.prod.yaml up -d` pour recréer les conteneurs (un `restart` ne relit pas `.env.prod`)
+   - dans la Google Cloud Console, ajout de l'origine `https://15-224-8-36.sslip.io` et de l'URI de redirection `https://15-224-8-36.sslip.io/connect/google/check`
+
+### Problèmes rencontrés et solutions
+
+| Symptôme | Cause | Solution |
+|---|---|---|
+| `ssh: Could not resolve hostname ip` | `IP` laissé tel quel dans la commande | Remplacer par la vraie adresse : `ubuntu@15.224.8.36` |
+| `can't connect without a private SSH key` (GitHub Actions) | Secret `EC2_SSH_KEY` absent ou mal nommé (créé dans « Variables » par exemple) | Le créer dans l'onglet **Secrets** avec ce nom exact |
+| `ssh.ParsePrivateKey: ssh: no key found` | Contenu du secret incomplet ou incorrect | `gh secret set EC2_SSH_KEY < Streemi.pem` pour envoyer le fichier entier |
+| `ERR_SSL_PROTOCOL_ERROR` dans le navigateur | Adresse tapée avec des points (`15.224.8.36.sslip.io`) | Utiliser des tirets : `15-224-8-36.sslip.io`, le seul domaine qui a un certificat |
+| Site en ligne mais sans films ni séries | Base de production vide | Copier la base locale (étape 5) |
+| « La connexion Google n'est pas configurée » | Clés absentes de `.env.prod` | Étape 7 |
+
+**Coûts** : arrêter l'instance stoppe la facturation du calcul, mais une IP Elastic non associée à une instance en marche est facturée. Après la soutenance, il faut **résilier l'instance et libérer l'IP Elastic** (région Paris).
+
 ---
 
 ## Structure du projet

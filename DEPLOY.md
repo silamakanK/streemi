@@ -183,3 +183,6 @@ La stack complète se lance avec `compose.prod.yaml` et un `.env.prod` local con
 | « 400 Bad Request » | Le domaine utilisé n'est pas dans `TRUSTED_HOSTS` |
 | Le déploiement échoue à l'étape SSH | `EC2_SSH_KEY` incomplet, ou port 22 limité à votre IP dans le groupe de sécurité (voir étape 1) |
 | Les emails ne partent pas | `MAILER_DSN` incorrect : voir `$C logs worker` |
+| `ssh.ParsePrivateKey: no key found` | Secret `EC2_SSH_KEY` incomplet : `gh secret set EC2_SSH_KEY < streemi.pem` |
+| `ERR_SSL_PROTOCOL_ERROR` avec sslip.io | IP écrite avec des points au lieu de tirets (`13-38-42-7.sslip.io`) |
+| Une variable de `.env.prod` n'est pas prise en compte | `restart` ne relit pas le fichier : lancez `$C up -d` |

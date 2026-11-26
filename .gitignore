@@ -35,3 +35,6 @@
 # Secrets de production : uniquement sur le serveur, jamais dans git
 /.env.prod
 ###< déploiement ###
+
+# Export de la base (contient les comptes utilisateurs)
+/streemi.sql
